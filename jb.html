@@ -144,6 +144,24 @@
       body.fail #msg {
         display: block;
       }
+      body.unsupported #spin {
+        display: none;
+      }
+      body.unsupported #msg {
+        display: block;
+        box-sizing: border-box;
+        left: 18px;
+        right: 18px;
+        max-width: 680px;
+        margin: 0 auto;
+        padding: 18px;
+        border: 1px solid #6e3b86;
+        border-radius: 14px;
+        background: #130b1d;
+        color: #f0d7ff;
+        box-shadow: 0 0 24px rgba(205, 73, 255, 0.2);
+        line-height: 1.6;
+      }
       body.done #msg {
         display: block;
         color: #e56fff;
@@ -249,7 +267,7 @@
       <p><a class="diag-page-link" href="diagnostics.html">Open full diagnostics and fixes</a></p>
     </details>
     <div id="spin"></div>
-    <div id="msg">Restart your console</div>
+    <div id="msg">Preparing firmware check…</div>
     <div id="wrap">
       <div id="state"></div>
       <div id="out"></div>
@@ -306,7 +324,7 @@
     </script>
     <script src="typewriter.js"></script>
     <script type="module">
-      import "./jb.js?v=19";
+      import "./jb.js?v=21";
     </script>
   </body>
 </html>

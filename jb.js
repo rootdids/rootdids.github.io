@@ -9,6 +9,7 @@ const lines = [];
 let passCount = 0,
   failCount = 0;
 let armedEver = false;
+let firmwareIssue = null;
 const params = new URLSearchParams(location.search);
 const STOP_BEFORE_DOUBLE = params.get("stop") === "beforedouble";
 
@@ -56,10 +57,11 @@ function finishUI(ok) {
   if (m)
     m.textContent = ok
       ? "DONE"
-      : armedEver
-        ? "Restart your console"
-        : "Refresh the page and run again";
-  document.body.className = ok ? "done" : "fail";
+      : firmwareIssue ||
+        (armedEver
+          ? "Restart your console"
+          : "Refresh the page and run again");
+  document.body.className = ok ? "done" : firmwareIssue ? "unsupported" : "fail";
 }
 function mark(tag, detail) {
   const raw = detail;
@@ -157,7 +159,10 @@ let allDone = false,
     mark("BUILD", "jb=skipjb2 base=ef1670a");
     mark("FW", key || "(not a PS4 UA)");
     if (!off) {
-      state("no offsets for this firmware", "bad");
+      firmwareIssue = key
+        ? "Firmware " + key + " is not supported by this build. No exploit was started because this firmware has no profile here. Refreshing will not change that; check back for a verified update."
+        : "PlayStation 4 firmware could not be detected, so no exploit was started. Check that this page is open on the PS4 browser.";
+      state(firmwareIssue, "bad");
       return;
     }
     const fwKey = key || "unknown";
@@ -194,8 +199,13 @@ let allDone = false,
           " -- dump this firmware with kdump5.html and derive its table" +
           " with tools/kderive.py; stage=pre_primitive",
       )
-    )
+    ) {
+      firmwareIssue =
+        "Firmware " +
+        fwKey +
+        " has an incomplete profile in this build. Required preflight data is missing, so the exploit was not started. Refreshing will not fix this; use a complete, verified build.";
       return;
+    }
 
     const KPATCH_FILE =
       "patches/" + (off.kpatch || fwKey.replace(".", "") + ".bin");
@@ -213,8 +223,13 @@ let allDone = false,
           KPATCH_FILE +
           " -- build it from patches/<fw>.c, see patches/1300.c",
       )
-    )
+    ) {
+      firmwareIssue =
+        "Firmware " +
+        fwKey +
+        " is missing required patch-profile data in this build. The exploit was not started. Refreshing will not fix this; use a complete, verified build.";
       return;
+    }
     const needPl = ["wk___imp_pthread_create", "k_pthread_create"].filter(
       (k) => off[k] === undefined,
     );
@@ -224,8 +239,13 @@ let allDone = false,
         !DO_PAYLOAD || needPl.length === 0,
         "missing=[" + needPl.join(",") + "] payload=" + PAYLOAD_FILE,
       )
-    )
+    ) {
+      firmwareIssue =
+        "Firmware " +
+        fwKey +
+        " is missing required payload-profile data in this build. The exploit was not started. Refreshing will not fix this; use a complete, verified build.";
       return;
+    }
     mark("FW-STATUS", off.fw_status || "none");
     mark(
       "FW-KTABLE",
