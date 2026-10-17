@@ -1,0 +1,312 @@
+<!doctype html>
+<html lang="en" manifest="cache.appcache">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="author" content="Dids" />
+    <title>Dids | PS4</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        padding: 0;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        background: #08060d;
+        color: #e9ddff;
+        font:
+          15px/1.45 "Segoe UI",
+          system-ui,
+          sans-serif;
+      }
+      #brand {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 5px;
+        text-align: center;
+        padding: 10px 10px 12px;
+        background: #120b1b;
+      }
+      #brand img {
+        display: block;
+        width: 64px;
+        height: 64px;
+        margin: 0;
+        border: 1px solid rgba(220, 140, 255, 0.24);
+        border-radius: 14px;
+        object-fit: cover;
+        vertical-align: middle;
+        box-shadow: 0 0 18px rgba(220, 75, 255, 0.34);
+      }
+      #brand b {
+        display: block;
+        font-size: 15px;
+        font-weight: 700;
+        letter-spacing: 0.14em;
+        color: #fff0ff;
+        vertical-align: middle;
+      }
+      #tool-title {
+        position: relative;
+        z-index: 2;
+        margin: 0;
+        padding: 0 12px 12px;
+        background: #120b1b;
+        border-bottom: 1px solid #3b254b;
+        color: #fff0ff;
+        font-size: clamp(19px, 5vw, 25px);
+        line-height: 1.2;
+        text-align: center;
+      }
+      .discord-link {
+        color: #efa4ff;
+        text-decoration: underline;
+        overflow-wrap: anywhere;
+      }
+      .discord-link:hover,
+      .discord-link:focus {
+        color: #fff0ff;
+      }
+      .diag-page-link {
+        color: #efa4ff;
+        text-decoration: underline;
+      }
+      #footer {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 8px 12px;
+        margin-top: auto;
+        padding: 10px 12px 12px;
+        background: #100a17;
+        border-top: 1px solid #3b254b;
+        color: #aa98bd;
+        text-align: center;
+        font-size: 12px;
+      }
+      #footer a {
+        color: #efa4ff;
+        text-decoration: underline;
+        overflow-wrap: anywhere;
+      }
+      #footer a:hover,
+      #footer a:focus {
+        color: #fff0ff;
+      }
+
+      /* running: a spinner under the brand. jb.js sets body.done / body.fail / body.log. */
+      #spin {
+        position: fixed;
+        top: calc(50% + 20px);
+        left: 50%;
+        width: 46px;
+        height: 46px;
+        margin: -23px 0 0 -23px;
+        border: 4px solid #3b254b;
+        border-top-color: #e56fff;
+        border-radius: 50%;
+        animation: spin 0.9s linear infinite;
+      }
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+      #msg {
+        position: fixed;
+        top: 50%;
+        left: 0;
+        right: 0;
+        transform: translateY(-50%);
+        text-align: center;
+        font-size: 16px;
+        letter-spacing: 0.5px;
+        display: none;
+      }
+      #wrap {
+        flex: 1;
+        padding: 0;
+      }
+      #state,
+      #out {
+        display: none;
+      }
+
+      body.done #spin {
+        display: none;
+      }
+      body.fail #spin {
+        display: none;
+      }
+      body.fail #msg {
+        display: block;
+      }
+      body.done #msg {
+        display: block;
+        color: #e56fff;
+        font-weight: 700;
+        letter-spacing: 2px;
+      }
+
+      /* ?log=1 -- the full step log, styled like the landing. */
+      body.log #spin,
+      body.log #msg {
+        display: none;
+      }
+      body.log #wrap {
+        flex: 1;
+        padding: 14px 18px;
+      }
+      body.log #state {
+        display: block;
+        font-size: 22px;
+        font-weight: 700;
+        margin: 0 0 8px;
+      }
+      body.log #out {
+        display: block;
+        white-space: pre-wrap;
+        font:
+          12px/1.45 Consolas,
+          monospace;
+        background: #130d1d;
+        border: 1px solid #3b254b;
+        border-radius: 5px;
+        padding: 10px 12px;
+        height: calc(100vh - 141px);
+        overflow-y: auto;
+      }
+      .ok {
+        color: #e56fff;
+      }
+      .bad {
+        color: #ff79c6;
+      }
+      .warn {
+        color: #cfa8ff;
+      }
+      .safe {
+        color: #e56fff;
+      }
+      .danger {
+        color: #ff79c6;
+      }
+      code {
+        color: #efa4ff;
+      }
+      #diagnostics {
+        position: fixed;
+        z-index: 20;
+        left: 12px;
+        right: 12px;
+        bottom: 68px;
+        max-width: 600px;
+        margin: auto;
+        padding: 10px 12px;
+        border: 1px solid #49305d;
+        border-radius: 12px;
+        background: rgba(14, 9, 21, 0.96);
+        color: #d8c8e5;
+        box-shadow: 0 0 18px rgba(200, 65, 255, 0.12);
+      }
+      #diagnostics summary {
+        cursor: pointer;
+        color: #efa4ff;
+        font-weight: 700;
+      }
+      #diagRows {
+        display: grid;
+        grid-template-columns: minmax(88px, 120px) 1fr;
+        gap: 4px 12px;
+        margin: 10px 0 0;
+        font-size: 12px;
+      }
+      #diagRows dt,
+      #diagRows dd {
+        margin: 0;
+      }
+      #diagRows dt {
+        color: #aa98bd;
+      }
+      #diagRows dd {
+        color: #e9ddff;
+        overflow-wrap: anywhere;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="brand">
+      <img src="dids-bot-logo.gif" alt="Dids Bot logo" width="64" height="64" />
+      <b data-typewriter>DIDS</b>
+    </div>
+    <h1 id="tool-title" data-typewriter>JB Tool</h1>
+    <details id="diagnostics">
+      <summary>Quick status checks</summary>
+      <dl id="diagRows"></dl>
+      <p><a class="diag-page-link" href="diagnostics.html">Open full diagnostics and fixes</a></p>
+    </details>
+    <div id="spin"></div>
+    <div id="msg">Restart your console</div>
+    <div id="wrap">
+      <div id="state"></div>
+      <div id="out"></div>
+    </div>
+    <footer id="footer">
+      <span>Developed by Dids · with thanks to CodeX</span>
+      <a href="index.html">Home</a>
+      <a href="diagnostics.html">Diagnostics</a>
+      <a class="discord-link" href="https://discord.gg/rawmoddersgroup" target="_blank" rel="noopener noreferrer">https://discord.gg/rawmoddersgroup</a>
+    </footer>
+    <script>
+      (function () {
+        var rows = document.getElementById("diagRows");
+        function addRow(label, value) {
+          var term = document.createElement("dt");
+          var desc = document.createElement("dd");
+          term.textContent = label;
+          desc.textContent = value;
+          rows.appendChild(term);
+          rows.appendChild(desc);
+          return function (next) { desc.textContent = next; };
+        }
+        var match = /PlayStation\s+4[\/ ](\d+)\.(\d+)/.exec(navigator.userAgent);
+        var firmware = "not detected";
+        if (match) {
+          var minor = parseInt(match[2], 16).toString(16);
+          if (minor.length < 2) minor = "0" + minor;
+          firmware = match[1] + "." + minor;
+        }
+        addRow("Firmware", firmware);
+        addRow("Page", location.pathname || "/");
+        addRow("Origin", location.protocol === "file:" ? "local file preview" : location.origin);
+        addRow("JavaScript", "running");
+        addRow("Module scripts", "noModule" in document.createElement("script") ? "supported" : "not detected");
+        var setConnection = addRow("Connection", typeof navigator.onLine === "boolean" ? (navigator.onLine ? "online" : "offline") : "unknown");
+        window.addEventListener("online", function () { setConnection("online"); });
+        window.addEventListener("offline", function () { setConnection("offline"); });
+        var cacheStatus = "unavailable";
+        try {
+          var appCache = window.applicationCache;
+          if (appCache) {
+            var states = ["uncached", "idle", "checking", "downloading", "update ready", "obsolete"];
+            cacheStatus = states[appCache.status] || "unknown";
+          }
+        } catch (e) { cacheStatus = "unavailable"; }
+        addRow("Offline cache", cacheStatus);
+        var logo = document.querySelector("#brand img");
+        var setLogo = addRow("Logo asset", logo && logo.complete && logo.naturalWidth ? "loaded" : "loading");
+        if (logo) {
+          logo.addEventListener("load", function () { setLogo("loaded"); });
+          logo.addEventListener("error", function () { setLogo("failed to load"); });
+        }
+      })();
+    </script>
+    <script src="typewriter.js"></script>
+    <script type="module">
+      import "./jb.js?v=19";
+    </script>
+  </body>
+</html>

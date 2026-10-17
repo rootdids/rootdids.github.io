@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en" manifest="cache.appcache">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="author" content="Dids">
+<title>Dids | PS4</title>
+<style>
+  html, body { margin:0; padding:0; background:#08060d; color:#e9ddff;
+               font:15px/1.45 "Segoe UI", system-ui, sans-serif; }
+  body { min-height:100vh; display:flex; flex-direction:column; }
+  #wrap { flex:1; padding:16px 18px; }
+  .home-heading { max-width:660px; margin:10px auto 0; text-align:center; }
+  .home-heading h1 { margin:0; color:#fff0ff; font-size:clamp(25px,6vw,36px); line-height:1.2; }
+  .home-heading p { margin:7px 0 0; color:#b9a8c8; }
+  .tool-nav { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px;
+              max-width:660px; margin:20px auto 14px; }
+  .tool-card { display:block; min-height:122px; padding:16px; border:1px solid #51346a;
+               border-radius:14px; background:linear-gradient(145deg,#1a0e28,#100a17);
+               color:#f1e6fa; text-decoration:none; box-shadow:0 10px 25px rgba(0,0,0,.18);
+               transition:transform .2s ease,border-color .2s ease,box-shadow .2s ease; }
+  .tool-card:hover, .tool-card:focus { border-color:#f276df; transform:translateY(-2px);
+                                      box-shadow:0 0 22px rgba(226,91,255,.25); outline:none; }
+  .tool-card strong { display:block; color:#fff0ff; font-size:18px; }
+  .tool-card small { display:block; margin-top:6px; color:#b9a8c8; font-size:13px; line-height:1.45; }
+  .tool-card.jb { border-color:#74469a; }
+  .tool-card.diagnostics { border-color:#4d3970; }
+  .runtime-status { max-width:660px; margin:0 auto; padding:12px 14px;
+                    border:1px solid #35243f; border-radius:11px; background:#100a17; }
+  #state { font-size:22px; font-weight:700; margin:0 0 6px; }
+  #det { font-size:13px; color:#aa98bd; margin:0 0 4px; }
+  #det b { color:#e9ddff; font-weight:600; }
+  #cache { font-size:12px; color:#837090; margin:0 0 10px; min-height:14px; }
+  #cache.cacheok { color:#e56fff; }
+  .ok { color:#e56fff; } .bad { color:#ff79c6; } .warn { color:#cfa8ff; }
+  #brand { display:flex; flex-direction:column; align-items:center; gap:5px;
+           text-align:center; padding:10px 10px 12px; background:#120b1b;
+           border-bottom:1px solid #3b254b; }
+  #brand img { display:block; width:64px; height:64px; margin:0; border-radius:14px;
+               border:1px solid rgba(220,140,255,.24); vertical-align:middle;
+               object-fit:cover; box-shadow:0 0 18px rgba(220,75,255,.34); }
+  #brand b { font-size:15px; font-weight:700; letter-spacing:.14em;
+             color:#fff0ff; vertical-align:middle; }
+  #footer a, .discord-link, .diag-page-link { color:#efa4ff;
+                  text-decoration:underline; overflow-wrap:anywhere; }
+  #footer a:hover, #footer a:focus, .discord-link:hover, .discord-link:focus,
+  .diag-page-link:hover, .diag-page-link:focus { color:#fff0ff; }
+  #footer { display:flex; align-items:center; justify-content:center; flex-wrap:wrap;
+            gap:8px 12px; margin-top:auto; padding:10px 12px 12px;
+            background:#100a17; border-top:1px solid #3b254b;
+            color:#aa98bd; text-align:center; font-size:12px; }
+  #diagnostics { position:fixed; z-index:20; left:12px; right:12px; bottom:68px;
+                 max-width:600px; margin:auto; padding:10px 12px;
+                 border:1px solid #49305d; border-radius:12px;
+                 background:rgba(14,9,21,.96); color:#d8c8e5;
+                 box-shadow:0 0 18px rgba(200,65,255,.12); }
+  #diagnostics summary { cursor:pointer; color:#efa4ff; font-weight:700; }
+  #diagRows { display:grid; grid-template-columns:minmax(88px,120px) 1fr;
+              gap:4px 12px; margin:10px 0 0; font-size:12px; }
+  #diagRows dt, #diagRows dd { margin:0; }
+  #diagRows dt { color:#aa98bd; }
+  #diagRows dd { color:#e9ddff; overflow-wrap:anywhere; }
+  @media (max-width:520px) { .tool-nav { grid-template-columns:1fr; } }
+</style>
+</head>
+<body>
+<div id="brand">
+  <img src="dids-bot-logo.gif" alt="Dids Bot logo" width="64" height="64">
+  <b data-typewriter>DIDS</b>
+</div>
+<div id="wrap">
+  <header class="home-heading">
+    <h1 data-typewriter>Dids PS4 Hub</h1>
+    <p>Choose a tool below. Diagnostics stays separate from the JB tool.</p>
+  </header>
+  <nav class="tool-nav" aria-label="Site tools">
+    <a class="tool-card jb" id="jb-tool-link" href="jb.html">
+      <strong>JB Tool</strong>
+      <small>Open the existing JB tool page.</small>
+    </a>
+    <a class="tool-card diagnostics" href="diagnostics.html">
+      <strong>Diagnostics</strong>
+      <small>Look up PS4 errors and check this site’s browser environment.</small>
+    </a>
+  </nav>
+  <section class="runtime-status" aria-label="Console and site status">
+    <div id="state">detecting firmware...</div>
+    <div id="det"></div>
+    <div id="cache"></div>
+  </section>
+</div>
+<footer id="footer">
+  <span>Developed by Dids · with thanks to CodeX</span>
+  <a href="jb.html">JB Tool</a>
+  <a href="diagnostics.html">Diagnostics</a>
+  <a class="discord-link" href="https://discord.gg/rawmoddersgroup" target="_blank" rel="noopener noreferrer">https://discord.gg/rawmoddersgroup</a>
+</footer>
+
+<details id="diagnostics">
+  <summary>Quick status checks</summary>
+  <dl id="diagRows"></dl>
+  <p><a class="diag-page-link" href="diagnostics.html">Open full diagnostics and fixes</a></p>
+</details>
+<script>
+(function () {
+    var rows = document.getElementById("diagRows");
+    function addRow(label, value) {
+        var term = document.createElement("dt");
+        var desc = document.createElement("dd");
+        term.textContent = label;
+        desc.textContent = value;
+        rows.appendChild(term);
+        rows.appendChild(desc);
+        return function (next) { desc.textContent = next; };
+    }
+    var match = /PlayStation\s+4[\/ ](\d+)\.(\d+)/.exec(navigator.userAgent);
+    var firmware = "not detected";
+    if (match) {
+        var minor = parseInt(match[2], 16).toString(16);
+        if (minor.length < 2) minor = "0" + minor;
+        firmware = match[1] + "." + minor;
+    }
+    addRow("Firmware", firmware);
+    addRow("Page", location.pathname || "/");
+    addRow("Origin", location.protocol === "file:" ? "local file preview" : location.origin);
+    addRow("JavaScript", "running");
+    addRow("Module scripts", "noModule" in document.createElement("script") ? "supported" : "not detected");
+    var setConnection = addRow("Connection", typeof navigator.onLine === "boolean" ? (navigator.onLine ? "online" : "offline") : "unknown");
+    window.addEventListener("online", function () { setConnection("online"); });
+    window.addEventListener("offline", function () { setConnection("offline"); });
+    var cacheStatus = "unavailable";
+    try {
+        var appCache = window.applicationCache;
+        if (appCache) {
+            var states = ["uncached", "idle", "checking", "downloading", "update ready", "obsolete"];
+            cacheStatus = states[appCache.status] || "unknown";
+        }
+    } catch (e) { cacheStatus = "unavailable"; }
+    addRow("Offline cache", cacheStatus);
+    var logo = document.querySelector("#brand img");
+    var setLogo = addRow("Logo asset", logo && logo.complete && logo.naturalWidth ? "loaded" : "loading");
+    if (logo) {
+        logo.addEventListener("load", function () { setLogo("loaded"); });
+        logo.addEventListener("error", function () { setLogo("failed to load"); });
+    }
+})();
+</script>
+<script>
+(function () {
+    var stateEl = document.getElementById("state");
+    var detEl = document.getElementById("det");
+    var cacheEl = document.getElementById("cache");
+    function setState(t, c) { stateEl.textContent = t; stateEl.className = c || ""; }
+    function setCache(t, ok) { cacheEl.textContent = t; cacheEl.className = ok ? "cacheok" : ""; }
+    var params = new URLSearchParams(location.search);
+
+    // Firmwares this build has a MEASURED kernel table for. jb.js still runs its
+    // own kernel-table-present gate, so this is UX only -- an unlisted firmware
+    // can still be launched with a tap. KEEP IN SYNC with ps4_offsets.js: add a
+    // fwnum here in the SAME commit that fills that firmware's kernel RVAs.
+    // The PS4 reports its minor as two hex digits in the UA (13.52 -> minor 0x52).
+    var SUPPORTED = { 1302: 1, 1304: 1, 1350: 1, 1352: 1 }; // all measured on hardware
+
+    var key = null, fwnum = null;
+    var m = /PlayStation\s+4[\/ ](\d+)\.(\d+)/.exec(navigator.userAgent);
+    if (m) {
+        var ms = parseInt(m[2], 16).toString(16);
+        if (ms.length < 2) ms = "0" + ms;
+        key = m[1] + "." + ms;
+        fwnum = parseInt(m[1], 10) * 100 + parseInt(ms, 10);
+    }
+
+    var forced = params.get("force") === "1";
+    var supported = forced || (fwnum !== null && SUPPORTED[fwnum] === 1);
+    detEl.innerHTML = "firmware <b>" + (key || "unknown") + "</b>"
+        + (supported ? " &middot; <b>supported</b>"
+                     : " &middot; not in this build's kernel table");
+
+    var target = "jb.html" + location.search;
+    document.getElementById("jb-tool-link").href = target;
+    setState(supported ? "JB TOOL READY" : "FIRMWARE NOT LISTED", supported ? "ok" : "warn");
+    setCache("Select JB Tool to open its existing page.", supported);
+})();
+</script>
+<script src="typewriter.js"></script>
+</body>
+</html>

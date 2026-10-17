@@ -1,0 +1,1002 @@
+<!doctype html>
+<html lang="en" manifest="cache.appcache">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="author" content="Dids" />
+    <meta name="theme-color" content="#0b0612" />
+    <title>Dids | PS4 Help &amp; Diagnostics</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #090610;
+        --panel: #130c1d;
+        --panel2: #100918;
+        --line: #39234b;
+        --text: #f0e6f8;
+        --muted: #bcaacb;
+        --pink: #f276df;
+        --purple: #bd8cff;
+        --warn: #ffd18b;
+        --error: #ff91b9;
+      }
+      * { box-sizing: border-box; }
+      html, body {
+        margin: 0;
+        min-height: 100%;
+        background: radial-gradient(ellipse at 50% -18%, #28103d 0, var(--bg) 52%);
+        color: var(--text);
+        font: 15px/1.55 "Segoe UI", system-ui, sans-serif;
+      }
+      body { min-height: 100vh; display: flex; flex-direction: column; }
+      #brand {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 5px;
+        padding: 10px 12px 12px;
+        background: rgba(14, 8, 21, .94);
+        border-bottom: 1px solid var(--line);
+      }
+      #brand img {
+        width: 64px;
+        height: 64px;
+        border: 1px solid rgba(226, 125, 255, .3);
+        border-radius: 14px;
+        object-fit: cover;
+        box-shadow: 0 0 20px rgba(220, 75, 255, .3);
+      }
+      #brand b { color: #fff0ff; font-size: 15px; letter-spacing: .14em; }
+      main { flex: 1; width: min(820px, calc(100% - 32px)); margin: 0 auto; padding: 22px 0 30px; }
+      h1 { margin: 0 0 5px; color: #fff0ff; font-size: clamp(23px, 5vw, 30px); line-height: 1.2; }
+      h2 { margin: 0; color: #fff0ff; font-size: 18px; }
+      h3 { margin: 0; font-size: 15px; }
+      p { margin: 8px 0; }
+      .intro, .muted { color: var(--muted); }
+      .panel {
+        margin-top: 18px;
+        padding: 16px;
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        background: linear-gradient(145deg, rgba(24, 14, 36, .98), rgba(14, 9, 21, .98));
+        box-shadow: 0 10px 32px rgba(0, 0, 0, .2);
+      }
+      .panel-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+      .eyebrow { margin: 0 0 3px; color: var(--pink); font-size: 11px; font-weight: 700; letter-spacing: .13em; text-transform: uppercase; }
+      .hint { color: var(--muted); font-size: 13px; }
+      label { display: block; margin: 12px 0 5px; color: #e9d8f8; font-size: 13px; font-weight: 650; }
+      input, textarea {
+        display: block;
+        width: 100%;
+        border: 1px solid #51346a;
+        border-radius: 9px;
+        outline: none;
+        background: #090610;
+        color: var(--text);
+        font: inherit;
+        padding: 10px 11px;
+      }
+      input:focus, textarea:focus { border-color: var(--pink); box-shadow: 0 0 0 3px rgba(242, 118, 223, .15); }
+      input::placeholder, textarea::placeholder { color: #877494; }
+      textarea { min-height: 92px; resize: vertical; }
+      .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 11px; }
+      button {
+        min-height: 40px;
+        border: 1px solid #8152a3;
+        border-radius: 9px;
+        background: linear-gradient(135deg, #672a80, #40205f);
+        color: #fff5ff;
+        font: inherit;
+        font-weight: 700;
+        padding: 8px 13px;
+        cursor: pointer;
+      }
+      button.secondary { background: #191022; border-color: #51346a; color: #e7d6f4; }
+      button:hover { border-color: #f276df; filter: brightness(1.12); }
+      button:focus-visible, a:focus-visible, summary:focus-visible { outline: 2px solid var(--pink); outline-offset: 2px; }
+      #helper-result {
+        display: none;
+        margin-top: 13px;
+        padding: 13px;
+        border: 1px solid #51346a;
+        border-radius: 10px;
+        background: #0c0712;
+      }
+      #helper-result.visible { display: block; }
+      #helper-result h3 { color: #f4d9ff; }
+      #helper-result ul { margin: 7px 0 3px; padding-left: 21px; }
+      #helper-result li { margin: 4px 0; }
+      #helper-result a, .panel a { color: #efa4ff; text-decoration: underline; overflow-wrap: anywhere; }
+      #helper-result a:hover, .panel a:hover { color: #fff; }
+      .privacy-note, .scope-note {
+        margin: 12px 0 0;
+        padding: 11px 12px;
+        border-left: 3px solid #9259b2;
+        border-radius: 0 8px 8px 0;
+        background: rgba(16, 10, 23, .9);
+        color: var(--muted);
+        font-size: 13px;
+      }
+      #summary {
+        margin: 12px 0;
+        padding: 11px 13px;
+        border: 1px solid #49305d;
+        border-radius: 10px;
+        background: var(--panel);
+      }
+      #summary[data-level="ok"] { border-color: #794c91; }
+      #summary[data-level="warn"] { border-color: #b37c44; color: #ffe2b5; }
+      #summary[data-level="error"] { border-color: #b64c7a; color: #ffd6e6; }
+      #checks { display: grid; gap: 9px; }
+      .check {
+        padding: 12px 14px;
+        border: 1px solid #35243f;
+        border-radius: 10px;
+        background: var(--panel2);
+      }
+      .check h3 { display: flex; justify-content: space-between; gap: 12px; color: #e9ddff; }
+      .check p { margin: 5px 0 0; }
+      .check .level { flex: none; color: var(--purple); font-size: 11px; font-weight: 700; text-transform: uppercase; }
+      .check[data-level="ok"] .level { color: var(--pink); }
+      .check[data-level="warn"] .level { color: var(--warn); }
+      .check[data-level="error"] .level { color: var(--error); }
+      .check .advice { color: var(--muted); font-size: 13px; }
+      #page-errors {
+        margin-top: 10px;
+        padding-left: 20px;
+        color: #ffd6e6;
+        font-size: 13px;
+      }
+      #page-errors li { margin: 5px 0; overflow-wrap: anywhere; }
+      #report-text { min-height: 160px; margin-top: 9px; font-family: Consolas, monospace; font-size: 12px; }
+      #report-message { min-height: 1.5em; color: var(--muted); font-size: 13px; }
+      details.panel { padding: 0; }
+      details.panel > summary { padding: 15px 16px; color: #efdfff; font-weight: 700; cursor: pointer; }
+      details.panel[open] > summary { border-bottom: 1px solid var(--line); }
+      .details-body { padding: 0 16px 16px; }
+      #footer {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 8px 14px;
+        padding: 10px 12px 12px;
+        background: #100a17;
+        border-top: 1px solid var(--line);
+        color: #aa98bd;
+        text-align: center;
+        font-size: 12px;
+      }
+      #footer a { color: #efa4ff; text-decoration: underline; overflow-wrap: anywhere; }
+      @media (max-width: 520px) {
+        main { width: calc(100% - 22px); padding-top: 16px; }
+        .panel { padding: 13px; }
+        .check h3 { align-items: flex-start; }
+        button { flex: 1 1 auto; }
+      }
+    </style>
+  </head>
+  <body>
+    <header id="brand">
+      <img id="logo" src="dids-bot-logo.gif" alt="Dids Bot logo" width="64" height="64" />
+      <b data-typewriter>DIDS</b>
+    </header>
+    <main>
+      <h1 data-typewriter>PS4 Help &amp; Diagnostics</h1>
+      <p class="intro">Look up a PS4 error code, get practical first steps, and check whether this page and browser are working as expected.</p>
+
+      <section class="panel" aria-labelledby="helper-title">
+        <p class="eyebrow">Error code helper</p>
+        <div class="panel-head">
+          <div>
+            <h2 id="helper-title" data-typewriter>What went wrong?</h2>
+            <div class="hint">Enter a code or paste the message shown on screen. The helper recognizes the codes listed in PlayStation’s PS4 directory and suggests safe next steps.</div>
+          </div>
+        </div>
+        <form id="error-form">
+          <label for="error-input">PS4 error code or message</label>
+          <input id="error-input" type="text" maxlength="4000" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="For example: CE-34878-0" />
+          <label for="message-input">What were you doing when it appeared? (optional)</label>
+          <textarea id="message-input" maxlength="1200" placeholder="For example: it appeared while starting a game or connecting to Wi-Fi."></textarea>
+          <div class="actions">
+            <button type="submit">Get suggestions</button>
+            <button class="secondary" id="clear-helper" type="button">Clear</button>
+          </div>
+        </form>
+        <section id="helper-result" aria-live="polite" aria-atomic="true"></section>
+        <p class="privacy-note"><strong>Private by design:</strong> this helper processes what you enter in this tab only. It does not upload or save your text. Don’t include passwords, account details, serial numbers, or payment information.</p>
+      </section>
+
+      <section class="panel" aria-labelledby="checks-title">
+        <div class="panel-head">
+          <div>
+            <p class="eyebrow">Browser checks</p>
+            <h2 id="checks-title" data-typewriter>Is this page healthy?</h2>
+            <div class="hint">Checks the current page, the home page, the logo, network state, and browser features.</div>
+          </div>
+          <button class="secondary" id="run-checks" type="button">Run again</button>
+        </div>
+        <div id="summary" role="status" aria-live="polite">Running checks…</div>
+        <div id="checks" aria-live="polite"></div>
+        <section class="check" id="error-watch" data-level="ok">
+          <h3><span>Errors on this diagnostics page</span><span class="level">listening</span></h3>
+          <p class="detail">While this page is open, it can note JavaScript errors and failed page-resource loads here.</p>
+          <p class="advice">This covers this diagnostics page only; browser security prevents it from reading another tab or the PS4 system log.</p>
+          <ul id="page-errors" hidden></ul>
+        </section>
+        <p class="scope-note">A website cannot read the PS4’s private system logs or another page’s console. For console errors, enter the code or paste the visible message above. These checks stay in your browser and do not test firmware or exploit status.</p>
+      </section>
+
+      <details class="panel" id="report-panel">
+        <summary>Copy or save a browser-check report</summary>
+        <div class="details-body">
+          <p class="hint">The report contains page-check results and browser capability names. It leaves out the text you entered in the error helper.</p>
+          <div class="actions">
+            <button id="copy-report" type="button">Copy report</button>
+            <button class="secondary" id="download-report" type="button">Download report</button>
+          </div>
+          <label for="report-text">Report text (you can select and copy it manually)</label>
+          <textarea id="report-text" readonly></textarea>
+          <p id="report-message" role="status" aria-live="polite"></p>
+        </div>
+      </details>
+    </main>
+    <footer id="footer">
+      <span>Developed by Dids · with thanks to CodeX</span>
+      <a href="index.html">Home</a>
+      <a href="jb.html">JB Tool</a>
+      <a href="https://discord.gg/rawmoddersgroup" target="_blank" rel="noopener noreferrer">https://discord.gg/rawmoddersgroup</a>
+    </footer>
+
+    <script src="typewriter.js"></script>
+    <script>
+      (function () {
+        "use strict";
+
+        var supportDirectory = "https://www.playstation.com/en-us/support/error-codes/ps4/";
+        var knownCodes = {
+          "CE-34878-0": {
+            title: "A game or application stopped working",
+            steps: ["Close the game or application, then start it again.", "Restart the PS4 and check whether the issue happens in one app or several.", "Check for official game and system updates. If it keeps happening in one game, back up its saves before reinstalling it."]
+          },
+          "CE-34335-8": {
+            title: "The console did not detect its hard disk drive",
+            steps: ["Turn the console fully off and restart it once.", "If the drive was recently changed or moved, stop and check the model-specific PlayStation support instructions.", "If the error persists, back up data if possible and contact PlayStation support or a qualified repair service. Avoid initializing the console before your data is backed up."]
+          },
+          "CE-34305-5": {
+            title: "The console could not read information from the hard disk drive",
+            steps: ["Fully power off the console, wait briefly, and restart it.", "If the console starts, back up important saved data.", "If the error returns, check the official support guidance before changing or initializing storage."]
+          },
+          "CE-37732-2": {
+            title: "Downloaded content may be corrupted",
+            steps: ["Cancel and remove only the failed download from Notifications > Downloads.", "Restart the console and download the item again.", "If the same error repeats, check the network and available storage, then use the official support guidance."]
+          },
+          "CE-36244-9": {
+            title: "A download was suspended and may be corrupted",
+            steps: ["Restart the console and resume the download from the game tile or Notifications > Downloads.", "If it happens again, test the internet connection and retry later in case the connection is busy.", "Keep your saved data backed up; avoid initializing the console as an early troubleshooting step."]
+          },
+          "CE-30774-1": {
+            title: "A system update from USB could not be applied",
+            steps: ["First try Settings > System Software Update while connected to the internet.", "For an official USB update, verify the drive is FAT or exFAT and that the file is in PS4/UPDATE/PS4UPDATE.PUP.", "Download update files only from PlayStation support and follow its current instructions."]
+          },
+          "NW-31201-7": {
+            title: "The console could not connect to the network",
+            steps: ["On PS4, open Settings > Network > Test Internet Connection.", "Restart the console and router; check PlayStation service status and try a wired connection if available.", "If other devices also have trouble, contact your internet provider."]
+          },
+          "NW-31254-5": {
+            title: "The DNS response may be delayed or unstable",
+            steps: ["Restart the router and run Settings > Network > Test Internet Connection on the PS4.", "Try again later or test a wired connection.", "If the issue persists across devices, ask your internet provider to check DNS and line stability."]
+          },
+          "CE-33945-4": {
+            title: "A server connection failed",
+            steps: ["Check PlayStation service status and the game’s own server status.", "Run the PS4 internet connection test and restart the router and console.", "If only one game is affected, check that game’s official support page."]
+          },
+          "CE-35340-5": {
+            title: "A PlayStation service may be under maintenance",
+            steps: ["Check PlayStation service status.", "If maintenance is listed, wait and try again later.", "If services are available, restart the console and test the network."]
+          },
+          "NP-32062-3": {
+            title: "Console data may be corrupted",
+            steps: ["Restart the console and check whether the error repeats.", "Back up saved data if the console is working.", "Use PlayStation’s official Safe Mode guidance before choosing any repair option; read each option carefully and avoid Initialize PS4 unless you intend to erase data."]
+          },
+          "CE-38612-0": {
+            title: "Application data on the hard drive may be corrupted",
+            steps: ["Restart the console and check whether the issue is limited to one application.", "Back up saved data before removing or reinstalling an application.", "If several applications fail, check the official PlayStation storage and Safe Mode guidance."]
+          },
+          "CE-33676-5": {
+            title: "Content may be corrupted or unavailable",
+            steps: ["If it is a download, remove that item and download it again.", "For purchased content, check your account and use Settings > Account Management > Restore Licenses if appropriate.", "Use the official support page before taking a Safe Mode action."]
+          },
+          "CE-32869-8": {
+            title: "Application information is invalid; the database may be partly corrupted",
+            steps: ["Restart the console and try starting the application again.", "If it continues, back up saved data and follow PlayStation’s official Safe Mode guidance.", "Read Safe Mode options carefully; Initialize PS4 erases user data."]
+          },
+          "SU-35931-1": {
+            title: "System software update data may be partly corrupted",
+            steps: ["Restart and retry the system update from Settings > System Software Update.", "If using USB, follow the current official PlayStation update instructions and download the file again from PlayStation.", "If the update repeatedly fails, use PlayStation support guidance before attempting recovery steps."]
+          },
+          "CE-35486-6": {
+            title: "The console could not read the disc",
+            steps: ["Eject the disc and check that it is clean, undamaged, and a supported format.", "Try another supported disc to see whether the issue affects one disc or the drive.", "If it persists, follow the official support page; it describes Safe Mode database rebuilding as a later step."]
+          },
+          "CE-32921-7": {
+            title: "The console could not read the disc",
+            steps: ["Eject and inspect the disc, then try it again.", "Try another supported disc to check whether the issue is with one disc or the console.", "If multiple discs fail, use the official PlayStation support guidance."]
+          },
+          "CE-34861-2": {
+            title: "A network error occurred",
+            steps: ["Run Settings > Network > Test Internet Connection.", "Restart the router and console, then check PlayStation service status.", "If possible, try a wired connection and see whether other devices can reach the internet."]
+          },
+          "E-82000168": {
+            title: "The console could not connect to PlayStation",
+            steps: ["Check PlayStation service status and test the console’s internet connection.", "Restart the router and console, then try again later.", "Never share account passwords or payment details when asking others for help."]
+          },
+          "WS-37368-7": {
+            title: "PlayStation reports an account suspension",
+            steps: ["Check the account email and sign in to the official PlayStation account page for details.", "Follow the appeal or support instructions provided by PlayStation.", "Do not share your password or attempt to bypass an account restriction."]
+          },
+          "CE-40740-5": {
+            title: "Application compatibility mismatch",
+            steps: ["Open Settings > System > System Information and note the console's system software version.", "Check the game's or application's publisher support page for its stated system software requirement and an officially compatible release or update.", "If this is an official disc or PlayStation Store title and the mismatch remains, contact the publisher or PlayStation Support. Do not install files from untrusted sources."]
+          }
+        };
+
+        /* Official PS4 error-code directory snapshot, refreshed on 17 October 2026.
+           Existing entries above retain their more detailed guidance. */
+        var officialCodeTitles = [
+          "CE-41839-5|An error occurred with the game or application",
+          "CE-34878-0|An error occurred with the game or application",
+          "NW-31201-7|Could not connect to the network",
+          "CE-34305-5|Failed to read information from the hard disk drive",
+          "CE-32894-6|The connection to the server was lost",
+          "CE-37700-7|A download was cancelled because content is unavailable on PlayStation Store",
+          "CE-32869-8|Could not start the application because its information is invalid",
+          "NP-36006-5|Trophy data may be corrupted",
+          "E-8200002E|The saved credit card is not valid",
+          "NW-31374-8|Connection timed out",
+          "E-82000113|Cannot redeem the voucher code",
+          "NP-37667-9|Share Play was disconnected because the network is unstable",
+          "E-82000171|The saved credit card is invalid",
+          "CE-35340-5|A service may be under maintenance",
+          "E-82000102|Problem adding funds to a child account",
+          "NP-31952-0|Network connection timed out",
+          "CE-30774-1|Cannot update",
+          "NP-38497-1|Share Play has network problems",
+          "CE-35287-5|Cannot connect to the server",
+          "SU-35931-1|System software update data is partially corrupted",
+          "CE-35486-6|The console cannot read the disc",
+          "CE-30784-2|The console did not detect a USB device",
+          "CE-34632-8|Content is unavailable",
+          "E-82000050|The address on file may be invalid or a server error occurred",
+          "CE-33945-4|Server connection failed",
+          "CE-35489-9|Invalid region",
+          "CE-34861-2|A network error occurred",
+          "E-82000134|This product or content is unavailable for the account country or region",
+          "E-82000168|Cannot connect to PlayStation",
+          "CE-34544-0|Required application information could not be found",
+          "E-8200002A|Credit or debit card information is invalid",
+          "WC-40345-6|Credit or debit card information is invalid",
+          "E-82000138|Failed to add wallet funds with a voucher or PlayStation card",
+          "E-82000028|Saved credit or debit card information is invalid",
+          "CE-34335-8|No hard disk drive was detected",
+          "CE-35406-8|PS Vita Remote Play accounts do not match",
+          "WS-36812-0|Unable to join a party",
+          "CE-33676-5|Content is corrupted or cannot be detected",
+          "WC-40383-8|Could not connect to the server (HTTP 503)",
+          "CE-33991-5|Could not connect to the network",
+          "SU-30696-4|The system software update file may be corrupted",
+          "WS-37337-3|The account is temporarily suspended",
+          "WS-37368-7|The account is suspended",
+          "WS-37313-7|There was an error linking a YouTube account",
+          "NP-37668-0|Share Play is unavailable because of network quality",
+          "CE-35327-0|Unable to connect to the server",
+          "NP-38496-0|Share Play cannot start because upload speed is below 2 Mbps",
+          "CE-36244-9|A download was suspended and may be corrupted",
+          "CE-33191-7|Insert the correct disc",
+          "NP-32062-3|Console data may be corrupted",
+          "CE-32889-0|A game or application error occurred",
+          "CE-34788-0|This update file cannot be used",
+          "NP-34993-8|Cannot connect to the server",
+          "CE-37732-2|Downloaded content was not installed correctly",
+          "NP-35000-8|PlayStation is undergoing maintenance",
+          "E-8200012F|The voucher code is not valid",
+          "WS-37501-6|Internal server error while connecting",
+          "E-82000133|The voucher code expired or is not yet available",
+          "WC-40375-9|The voucher code is not active or has expired",
+          "CE-36275-3|Unable to post a broadcast comment",
+          "CE-33126-5|Cannot continue broadcasting because settings or text may be invalid",
+          "CE-33319-9|The video or screenshot service limit was reached",
+          "WC-40355-7|Problem adding funds to a child account",
+          "WC-40349-0|The saved credit card is not valid",
+          "E-82000003|An error occurred",
+          "E-82000002|Cannot connect to the PlayStation server",
+          "NP-34994-9|A Party application error occurred",
+          "E-82000054|The entered credit card is invalid",
+          "CE-32921-7|The system cannot read the disc",
+          "CE-38612-0|Application data on the hard disk drive may be partly corrupted",
+          "E-80558337|PlayStation cannot recognize the content registration information",
+          "WS-36782-6|Friend request cannot be sent",
+          "E-82000130|The voucher code is invalid or not yet available",
+          "WC-40330-0|Timeout error",
+          "WC-40382-7|The saved credit card is invalid",
+          "WC-40377-1|Failed to add wallet funds with a voucher or PlayStation card",
+          "WC-40343-4|Saved credit or debit card information is invalid",
+          "WC-40378-2|Too many attempts were made in a short time",
+          "E-820001F7|Could not connect to the server (HTTP 503)",
+          "NP-33318-8|Share Play was disconnected because the network is unstable",
+          "CE-32951-0|A network connection problem occurred",
+          "CE-32937-4|Failed to download data",
+          "CE-38702-0|Unable to acquire server information",
+          "NP-31735-9|This feature cannot be used because of an age restriction",
+          "NW-31254-5|DNS response is delayed or unstable",
+          "CE-34867-8|Another disc is inserted",
+          "WC-40365-8|The cart total reached its limit",
+          "CE-36249-4|Cannot download content before its release date",
+          "NP-37680-4|The saved credit card is invalid",
+          "CE-35413-6|The Remote Play PIN is incorrect",
+          "CE-32930-7|Downloaded data on the hard disk drive may be corrupted",
+          "NP-31801-3|An error occurred while using PlayStation functions",
+          "CE-38604-1|Cannot download the application because its disc version is installed",
+          "CE-36485-6|Cannot recognize the USB storage device",
+          "WV-33917-3|Too many redirects occurred",
+          "NP-37637-6|Install the latest system software",
+          "E-82021088|The registered credit card is already associated with the account",
+          "NP-34957-8|There was a problem connecting to the server",
+          "E-82000000|Undefined application error",
+          "E-82021054|The entered credit card is invalid",
+          "NP-31736-0|The application is trying to connect to a signed-out user",
+          "CE-35451-8|An error occurred while connecting to the server",
+          "CE-35239-2|A system software update is required for network features",
+          "NW-31246-6|DNS settings are invalid",
+          "CE-36329-3|A system software error occurred",
+          "NP-39225-1|There was an internet connection problem",
+          "NP-31739-3|The latest update file must be installed to use this feature",
+          "WV-33898-1|There was a problem connecting to the server",
+          "CE-33937-5|The content must be purchased from PlayStation Store",
+          "CE-30005-8|An error occurred while accessing the hard disk or disc drive",
+          "NW-31194-8|There was an internet connection problem",
+          "CE-33950-0|Could not connect to verify the license",
+          "CE-38706-4|Cannot connect to the server",
+          "NW-31297-2|Unable to connect to the wireless network",
+          "NW-31247-7|Network connection timed out",
+          "NP-34924-2|Could not check the latest application update",
+          "E-8200012C|Credit or debit card information is invalid",
+          "CE-37704-1|A download was cancelled because there is not enough hard disk space",
+          "WV-33907-2|Could not connect to the server before the time limit",
+          "NW-31456-9|Connection error",
+          "NW-31253-4|DNS response is delayed or unstable",
+          "WC-40371-5|The voucher code is not valid",
+          "NW-31294-9|Wireless connection is unstable",
+          "NW-31295-0|Cannot connect to Wi-Fi because signal strength may be weak",
+          "WC-40360-3|A PlayStation Store error occurred",
+          "CE-37857-0|The console cannot recognize the USB storage",
+          "WS-37504-9|PlayStation service is under maintenance",
+          "WV-33899-2|Could not connect to PlayStation",
+          "NW-31291-6|Cannot connect to Wi-Fi because signal strength may be weak",
+          "NP-31980-1|Session is full",
+          "WS-37505-0|The connection between the console and server failed",
+          "CE-42747-4|System software is outdated",
+          "NW-31205-1|Network connection is unstable or too weak to reach PlayStation",
+          "CE-33992-6|Internet connection test error",
+          "NW-31453-6|The server connection is unstable",
+          "CE-39984-3|The console has an IP address but cannot reach the internet",
+          "CE-35918-6|The console cannot read the disc",
+          "CE-33987-0|Network connection timed out while signing in",
+          "WC-41705-7|The transaction requires a payment method",
+          "WC-34891-5|Credit card information is invalid",
+          "CE-33986-9|Internet connection test error",
+          "NP-31928-3|Could not connect to the network",
+          "WC-40372-6|The voucher code is invalid or not yet available",
+          "CE-32883-4|An internal error occurred",
+          "WC-34731-8|Credit card information is invalid",
+          "CE-33984-7|Connection test timed out while obtaining an IP address",
+          "CE-32899-1|Cannot connect to the server",
+          "SU-30645-8|The console did not recognize the system software update file",
+          "NW-31250-1|Internal server error while connecting",
+          "NP-31730-4|An error occurred while connecting to PlayStation",
+          "CE-41521-3|The Bluetooth device is not compatible with this console model",
+          "SU-42481-9|The system software update failed",
+          "SU-30746-0|The system software update failed",
+          "WS-37469-9|Failed to connect to the server",
+          "NP-38551-2|The primary PS4 activation limit was reached too quickly",
+          "WS-43709-3|Check the credit-card expiration date",
+          "NP-37602-8|An error occurred while linking accounts",
+          "E-8210604A|A payment error occurred",
+          "WS-43689-0|A payment error occurred",
+          "NP-32224-3|Failed to connect to PlayStation",
+          "NW-31473-8|Failed to connect to the server",
+          "NP-32470-6|Failed to connect to PlayStation",
+          "NW-31175-7|There was an error connecting to the network",
+          "NW-31204-0|There was an error connecting to the network",
+          "NW-31251-2|There was an error connecting to the network",
+          "NW-31308-5|There was an error connecting to the network",
+          "NW-34345-9|There was an error connecting to the network",
+          "SU-30625-6|Failed to update system software",
+          "NW-31172-4|Internet connection was lost",
+          "SU-34914-1|Failed to update",
+          "CE-30785-3|USB storage cannot be recognized in Safe Mode",
+          "CE-30035-1|Try again after a while",
+          "CE-30022-7|An internal error occurred",
+          "CE-33096-1|There was a problem uploading data",
+          "CE-33116-4|A system error occurred",
+          "CE-34697-9|There may be a problem with the hard disk drive",
+          "CE-35285-3|The account was signed in on another PS4 console",
+          "SU-30627-8|There was an error accessing the update data file",
+          "CE-30008-1|An error occurred while launching content",
+          "CE-32809-2|An error occurred while launching the game",
+          "CE-30002-5|Application data may be corrupted",
+          "CE-30006-9|An error occurred while accessing data",
+          "CE-30028-3|An error occurred while reading system storage or saved data",
+          "CE-34568-6|A system error occurred",
+          "CE-34719-4|An account could not synchronize with social media",
+          "CE-35290-9|The console cannot read the disc",
+          "CE-34224-5|A system error occurred",
+          "SU-30638-0|System software update could not be started",
+          "NP-31971-1|Failed to connect to PlayStation",
+          "NP-31975-5|Failed to connect to PlayStation",
+          "CE-32958-7|Data may be corrupted",
+          "NW-31229-7|There was an error connecting to the network",
+          "CE-33383-0|There was a problem connecting to the network",
+          "NP-37665-7|Application error",
+          "NP-32167-9|There was an error connecting to the server",
+          "CE-30905-7|Cannot start the Bluetooth connection process",
+          "CE-30012-6|An internal error occurred",
+          "NP-32370-5|This user is already registered",
+          "CE-30003-6|There was a problem with the network connection",
+          "CE-30088-9|An error occurred when starting the game",
+          "CE-30993-4|An error occurred during the Bluetooth connection",
+          "CE-32539-2|Failed to read data",
+          "CE-33103-0|Cannot share to social networking services",
+          "CE-33384-1|There was a problem with the network connection",
+          "CE-33415-6|An error occurred",
+          "CE-33678-7|The account is not entitled to the additional content",
+          "CE-34679-9|The game could not download because an identical file is already saved",
+          "CE-34703-7|The console is not activated",
+          "WS-37397-9|Could not connect to the server",
+          "NP-40833-8|There was an error connecting to the server",
+          "SU-41350-3|The update file cannot be recognized",
+          "WC-36551-0|A server communication error occurred",
+          "CE-32928-4|The download was cancelled",
+          "NP-34388-6|Failed to register an account",
+          "CE-33108-5|An error occurred while reading data",
+          "CE-30001-4|An error occurred",
+          "CE-41902-6|The USB storage device is not compatible with the console",
+          "SU-41333-4|There was a problem updating system software",
+          "SU-42118-6|There was a problem updating system software",
+          "WS-43701-5|There are not enough funds in the wallet",
+          "WC-34737-4|Check the registered payment-method information",
+          "WS-45479-9|This voucher code was already redeemed",
+          "WS-37338-4|There was an issue accessing PlayStation",
+          "NP-31866-4|There was an issue with online saved data",
+          "WS-44949-0|This action is temporarily restricted",
+          "WS-44369-6|PlayStation may be undergoing maintenance",
+          "CE-42288-4|An error occurred while connecting to PlayStation",
+          "NP-41772-1|An error occurred while activating a primary PS4 console",
+          "CE-46062-8|An application error occurred",
+          "NP-46042-6|Some entered information was incorrect",
+          "CE-36420-5|An error occurred during a Bluetooth connection",
+          "WS-45487-8|This voucher code was already redeemed",
+          "CE-38605-2|An error occurred while downloading content",
+          "WC-34736-3|Check the registered payment-method information",
+          "SU-30677-3|Failed to update the system software",
+          "NP-37521-8|An error occurred while connecting to the server",
+          "CE-36418-2|This Bluetooth device is not supported",
+          "WS-45480-1|The voucher country or region does not match the account",
+          "E-8222D405|Unable to send a friend request",
+          "WS-46332-8|PlayStation Plus content is not downloading",
+          "NP-34958-9|The PS4 game is padlocked",
+          "WS-38495-9|An error occurred while signing in to Sony Pictures Core",
+          "CE-33729-4|An error occurred while connecting to PlayStation"
+        ];
+
+        function defaultStepsForOfficialTitle(title) {
+          var lower = title.toLowerCase();
+          if (/network|internet|server|dns|wi-fi|wireless|connection|redirect/.test(lower)) {
+            return ["Open Settings > Network > Test Internet Connection on the PS4.", "Check PlayStation service status, then restart the console and router.", "Try a wired connection where possible. If other devices are also affected, contact your internet provider."];
+          }
+          if (/system software|update/.test(lower)) {
+            return ["Restart the console and retry from Settings > System Software Update.", "Use only the current update instructions and files published by PlayStation.", "If an update continues to fail, consult PlayStation Support before attempting Safe Mode recovery options."];
+          }
+          if (/disc|blu-ray|dvd/.test(lower)) {
+            return ["Eject the disc and check that it is clean, undamaged, and supported by the PS4.", "Try another supported disc to see whether the issue follows the disc or the console.", "If multiple discs fail, use PlayStation's official support guidance."];
+          }
+          if (/usb/.test(lower)) {
+            return ["Disconnect the USB device safely and restart the console.", "Check that the device and its format are supported by the PS4.", "If this is an official system update, follow PlayStation's current USB-update instructions exactly."];
+          }
+          if (/bluetooth/.test(lower)) {
+            return ["Restart the console and the Bluetooth device, then try pairing again.", "Confirm the accessory is supported by your PS4 model.", "Use the accessory maker's support instructions if the problem persists."];
+          }
+          if (/credit|card|payment|wallet|voucher|funds|transaction/.test(lower)) {
+            return ["Check account country or region and review payment or voucher details in the official PlayStation account page.", "Wait before trying again if the code says too many attempts were made.", "Never share card numbers, passwords, or verification codes when asking for help."];
+          }
+          if (/account|sign|license|entitled|purchase|activation|primary|age|region|store|friend/.test(lower)) {
+            return ["Check the account details, purchase history, and any PlayStation email notices using official PlayStation pages.", "Verify the account country or region and check PlayStation service status.", "Use PlayStation Support if the message refers to a restriction, entitlement, or account action you do not recognize."];
+          }
+          if (/share play|party|broadcast|social|upload/.test(lower)) {
+            return ["Check the network test result and PlayStation service status.", "Restart the console and try again with a stable connection.", "Review feature, account, and privacy settings if the issue only affects sharing or social features."];
+          }
+          if (/hard disk|hdd|storage|data|download|content|application|game|launch|read/.test(lower)) {
+            return ["Restart the console and see whether the problem is limited to one game, app, download, or save.", "Check available storage and back up saved data if the console is working.", "Before choosing a Safe Mode option, read PlayStation's official guidance carefully. Initialize PS4 erases user data."];
+          }
+          return ["Restart the console and see whether the error repeats.", "Write down the exact code and what you were doing when it appeared.", "Use the official PS4 error-code directory below for current code-specific support."];
+        }
+
+        officialCodeTitles.forEach(function (entry) {
+          var parts = entry.split("|");
+          if (!knownCodes[parts[0]]) {
+            knownCodes[parts[0]] = {
+              title: parts[1],
+              steps: defaultStepsForOfficialTitle(parts[1])
+            };
+          }
+        });
+
+        function make(tag, className, text) {
+          var node = document.createElement(tag);
+          if (className) node.className = className;
+          if (text !== undefined) node.textContent = text;
+          return node;
+        }
+
+        function findCode(text) {
+          var match = /(?:^|[^A-Z0-9])((?:CE|NW|SU|NP|WS|WC)-[A-Z0-9]{4,8}-[A-Z0-9]{1,2}|E-[A-F0-9]{8})(?=$|[^A-Z0-9])/i.exec(text || "");
+          return match ? match[1].toUpperCase() : "";
+        }
+
+        function categoryFor(code, text) {
+          var sample = (code + " " + text).toLowerCase();
+          if (/nw-|network|wi-?fi|dns|internet|router|connection|server/.test(sample)) return "Network or server connection";
+          if (/su-|update|firmware|system software/.test(sample)) return "System software update";
+          if (/disc|blu-?ray|dvd/.test(sample)) return "Disc or optical drive";
+          if (/hdd|hard.?drive|storage|database|corrupt|download|install/.test(sample)) return "Storage, download, or content";
+          if (/np-|ws-|account|suspend|sign.?in|voucher|payment|wallet/.test(sample)) return "PlayStation service or account";
+          return "PS4 system, game, or application";
+        }
+
+        function genericSteps(category) {
+          if (category === "Network or server connection") {
+            return ["Check PlayStation service status and the game’s service status.", "Run Settings > Network > Test Internet Connection on the PS4.", "Restart the console and router; try a wired connection if available. If other devices also fail, contact your internet provider."];
+          }
+          if (category === "System software update") {
+            return ["Restart the console and retry from Settings > System Software Update.", "Use only the current update instructions and files published by PlayStation.", "If it keeps failing, consult official PlayStation support before trying recovery options."];
+          }
+          if (category === "Disc or optical drive") {
+            return ["Eject and inspect the disc for dirt or damage; confirm its format is supported.", "Try another supported disc to check whether the problem is limited to one disc.", "If several discs fail, follow official PlayStation support guidance."];
+          }
+          if (category === "Storage, download, or content") {
+            return ["Restart the console and retry the affected download or application.", "Check available storage and back up saved data if the console is working.", "Avoid Initialize PS4 unless you have backed up data and intend to erase the console."];
+          }
+          if (category === "PlayStation service or account") {
+            return ["Check PlayStation service status and the official account page.", "Check account notifications or the email address on the account.", "Never share passwords, payment information, or verification codes."];
+          }
+          return ["Write down the exact code and what you were doing when it appeared.", "Fully restart the console and check whether the issue happens again.", "Back up saved data before any repair step that may change or erase console storage."];
+        }
+
+        function renderHelper(event) {
+          if (event && event.preventDefault) event.preventDefault();
+          var primary = document.getElementById("error-input").value || "";
+          var context = document.getElementById("message-input").value || "";
+          var combined = primary + " " + context;
+          var code = findCode(primary) || findCode(context);
+          var result = document.getElementById("helper-result");
+          result.innerHTML = "";
+          result.className = "visible";
+
+          if (!primary.replace(/\s/g, "")) {
+            result.appendChild(make("h3", "", "Enter an error code or paste the message first."));
+            result.appendChild(make("p", "muted", "The code is usually shown next to the error message on the console."));
+            return;
+          }
+
+          if (code && knownCodes[code]) {
+            var known = knownCodes[code];
+            result.appendChild(make("p", "eyebrow", "Recognized PS4 error code"));
+            result.appendChild(make("h3", "", code + " · " + known.title));
+            result.appendChild(make("p", "muted", "These steps are a starting point. Follow the current official support instructions for your exact situation."));
+            var list = make("ul");
+            known.steps.forEach(function (step) { list.appendChild(make("li", "", step)); });
+            result.appendChild(list);
+          } else {
+            var category = categoryFor(code, combined);
+            if (code) {
+              result.appendChild(make("p", "eyebrow", "Code found"));
+              result.appendChild(make("h3", "", code + " · " + category));
+              result.appendChild(make("p", "muted", "This code is not in the built-in directory. Use PlayStation’s official directory for current code-specific instructions; the general steps below are safe first checks."));
+            } else {
+              var textCategory = categoryFor("", combined);
+              result.appendChild(make("p", "eyebrow", "No code detected"));
+              result.appendChild(make("h3", "", "Here are general first steps"));
+              result.appendChild(make("p", "muted", "We couldn’t identify a PS4 code in that text. Check the visible message for a code such as CE-34878-0. The suggestions below are based only on words in the message."));
+              category = textCategory;
+            }
+            var generalList = make("ul");
+            genericSteps(category).forEach(function (step) { generalList.appendChild(make("li", "", step)); });
+            result.appendChild(generalList);
+          }
+
+          var lookup = document.createElement("a");
+          lookup.href = supportDirectory;
+          lookup.target = "_blank";
+          lookup.rel = "noopener noreferrer";
+          lookup.textContent = code ? "Browse official PS4 error codes for " + code : "Browse official PS4 error codes";
+          result.appendChild(make("p", "", ""));
+          result.lastChild.appendChild(lookup);
+          result.appendChild(make("p", "hint", "Search for the code in the official directory. The link always opens the directory so it cannot send you to a missing code page."));
+          if (context) result.appendChild(make("p", "hint", "Your extra details were used only for this local suggestion and are not included in the report."));
+        }
+
+        document.getElementById("error-form").addEventListener("submit", renderHelper);
+        document.getElementById("clear-helper").addEventListener("click", function () {
+          document.getElementById("error-input").value = "";
+          document.getElementById("message-input").value = "";
+          var result = document.getElementById("helper-result");
+          result.innerHTML = "";
+          result.className = "";
+          document.getElementById("error-input").focus();
+        });
+
+        var capturedErrors = [];
+        function updateErrorWatch() {
+          var list = document.getElementById("page-errors");
+          var card = document.getElementById("error-watch");
+          var badge = card.querySelector(".level");
+          var detail = card.querySelector(".detail");
+          list.innerHTML = "";
+          if (!capturedErrors.length) {
+            list.hidden = true;
+            badge.textContent = "listening";
+            card.setAttribute("data-level", "ok");
+            detail.textContent = "No JavaScript or resource-load errors have been observed on this diagnostics page.";
+          } else {
+            list.hidden = false;
+            badge.textContent = capturedErrors.length + " captured";
+            card.setAttribute("data-level", "warn");
+            detail.textContent = "These events happened on this diagnostics page while it was open. They are shown only here and are not uploaded.";
+            capturedErrors.forEach(function (entry) { list.appendChild(make("li", "", entry)); });
+          }
+        }
+        function addPageError(description) {
+          capturedErrors.push(description);
+          if (capturedErrors.length > 10) capturedErrors.shift();
+          updateErrorWatch();
+          updateReport();
+        }
+        window.addEventListener("error", function (event) {
+          var target = event.target;
+          if (target && target !== window) {
+            var resource = target.src || target.href || "";
+            resource = String(resource).split("?")[0].split("#")[0].split("/").pop();
+            addPageError("A page resource failed to load" + (resource ? ": " + resource : "."));
+          } else {
+            var message = String(event.message || "A JavaScript error occurred").replace(/https?:\/\/\S+/gi, "[URL]").replace(/\s+/g, " ").slice(0, 180);
+            var source = String(event.filename || "").split("?")[0].split("#")[0].split("/").pop();
+            addPageError("JavaScript error" + (source ? " in " + source : "") + (event.lineno ? " at line " + event.lineno : "") + ": " + message);
+          }
+        }, true);
+        if ("onunhandledrejection" in window) {
+          window.addEventListener("unhandledrejection", function () {
+            addPageError("An unhandled background task failed on this diagnostics page. Check the page’s network and resource checks.");
+          });
+        }
+
+        var checkResults = [];
+        function addCheck(title, level, detail, advice) {
+          var card = make("section", "check");
+          var heading = make("h3");
+          var name = make("span", "", title);
+          var badge = make("span", "level", level);
+          var message = make("p", "detail", detail);
+          var fix = make("p", "advice", advice || "");
+          heading.appendChild(name);
+          heading.appendChild(badge);
+          card.appendChild(heading);
+          card.appendChild(message);
+          card.appendChild(fix);
+          document.getElementById("checks").appendChild(card);
+          var item = {
+            title: title,
+            level: level,
+            detail: detail,
+            advice: advice || "",
+            set: function (nextLevel, nextDetail, nextAdvice) {
+              item.level = nextLevel;
+              item.detail = nextDetail;
+              item.advice = nextAdvice || "";
+              card.setAttribute("data-level", nextLevel);
+              badge.textContent = nextLevel;
+              message.textContent = nextDetail;
+              fix.textContent = item.advice;
+              renderSummary();
+              updateReport();
+            }
+          };
+          checkResults.push(item);
+          return item;
+        }
+
+        function renderSummary() {
+          var errors = 0;
+          var warnings = 0;
+          var pending = 0;
+          checkResults.forEach(function (item) {
+            if (item.level === "error") errors++;
+            else if (item.level === "warn") warnings++;
+            else if (item.level === "checking") pending++;
+          });
+          var summary = document.getElementById("summary");
+          if (pending) {
+            summary.setAttribute("data-level", "info");
+            summary.textContent = "Checks running…";
+          } else if (errors) {
+            summary.setAttribute("data-level", "error");
+            summary.textContent = errors + " issue" + (errors === 1 ? "" : "s") + " found. Review the suggested fixes below.";
+          } else if (warnings) {
+            summary.setAttribute("data-level", "warn");
+            summary.textContent = "Checks finished with " + warnings + " note" + (warnings === 1 ? "" : "s") + ". Review the suggestions below.";
+          } else {
+            summary.setAttribute("data-level", "ok");
+            summary.textContent = "No page-loading issues detected. This does not confirm console or firmware health.";
+          }
+        }
+
+        function hasStorage() {
+          try {
+            var key = "__dids_diag_" + String(new Date().getTime());
+            window.localStorage.setItem(key, "1");
+            window.localStorage.removeItem(key);
+            return true;
+          } catch (error) {
+            return false;
+          }
+        }
+
+        function runChecks() {
+          document.getElementById("checks").innerHTML = "";
+          checkResults = [];
+          var protocol = location.protocol;
+          if (protocol === "http:" || protocol === "https:") {
+            addCheck("Page address", "ok", "This page is served from " + location.host + " over " + protocol.replace(":", "") + ".", "");
+          } else {
+            addCheck("Page address", "warn", "This page was opened using " + protocol + ".", "For full asset and offline-cache checks, open the site through its normal HTTP or HTTPS address.");
+          }
+
+          var onlineCheck = addCheck(
+            "Network status",
+            navigator.onLine === false ? "warn" : "ok",
+            navigator.onLine === false ? "The browser reports that it is offline." : "The browser reports that it is online; this does not guarantee that every server is reachable.",
+            navigator.onLine === false ? "Reconnect and retry. If this is a local preview, make sure its web server is running." : "If the site still fails to load, check the address and the server."
+          );
+          window.addEventListener("online", function () {
+            onlineCheck.set("ok", "The browser reports that it is online; this does not guarantee that every server is reachable.", "If the site still fails to load, check the address and the server.");
+          });
+          window.addEventListener("offline", function () {
+            onlineCheck.set("warn", "The browser reports that it is offline.", "Reconnect and retry. If this is a local preview, make sure its web server is running.");
+          });
+
+          var fetchCheck = addCheck("Home page response", "checking", "Checking whether index.html responds…", "");
+          if (typeof window.fetch !== "function") {
+            fetchCheck.set("warn", "This browser does not provide the fetch API.", "Try opening the home page directly. The browser feature list below shows available alternatives.");
+          } else {
+            window.fetch("index.html", { cache: "no-store" }).then(function (response) {
+              if (response.ok) fetchCheck.set("ok", "The home page responded with HTTP " + response.status + ".", "");
+              else fetchCheck.set("error", "The home page responded with HTTP " + response.status + ".", "Check the site address and confirm index.html is in the server’s document folder.");
+            }).catch(function () {
+              fetchCheck.set("error", "The request for index.html failed.", "Check the page address, network, and local server. A file:// page may block this check; use the site’s HTTP or HTTPS address.");
+            });
+          }
+
+          var capabilities = [];
+          if (typeof window.fetch === "function") capabilities.push("fetch");
+          if (typeof window.Promise === "function") capabilities.push("Promises");
+          if ("noModule" in document.createElement("script")) capabilities.push("JavaScript modules");
+          if (typeof window.indexedDB !== "undefined") capabilities.push("IndexedDB");
+          if (typeof window.caches !== "undefined") capabilities.push("Cache API");
+          if (navigator.serviceWorker) capabilities.push("service workers");
+          if (navigator.clipboard && navigator.clipboard.writeText) capabilities.push("clipboard API");
+          if (typeof window.Blob === "function" && window.URL && window.URL.createObjectURL) capabilities.push("file export");
+          addCheck("Browser features", "info", capabilities.length ? "Available: " + capabilities.join(", ") + "." : "This browser exposes few modern web APIs.", "Some features may be unavailable in older console browsers. These checks report browser APIs only; they do not test games or console internals.");
+
+          addCheck("Temporary browser storage", hasStorage() ? "ok" : "warn", hasStorage() ? "A temporary local-storage write and removal succeeded." : "The browser blocked temporary local storage.", hasStorage() ? "The check removed its temporary value immediately." : "Private browsing or browser settings may block website storage. This helper does not need saved storage.");
+
+          var cacheCheck;
+          try {
+            var appCache = window.applicationCache;
+            if (!appCache) {
+              cacheCheck = addCheck("Legacy offline cache", "warn", "This browser does not expose the legacy Application Cache API.", "Stay online while using the site. If the main page shows stale content, clear the site cache and reload.");
+            } else {
+              var cacheStates = ["uncached", "idle", "checking", "downloading", "update ready", "obsolete"];
+              var cacheState = cacheStates[appCache.status] || "unknown";
+              var cacheLevel = appCache.status === appCache.OBSOLETE ? "error" : (appCache.status === appCache.UPDATEREADY || appCache.status === appCache.DOWNLOADING || appCache.status === appCache.CHECKING || appCache.status === appCache.UNCACHED ? "warn" : "ok");
+              var cacheAdvice = "";
+              if (appCache.status === appCache.UNCACHED) cacheAdvice = "The browser has not cached this page. Load the home page while online to refresh its cache.";
+              else if (appCache.status === appCache.CHECKING || appCache.status === appCache.DOWNLOADING) cacheAdvice = "Stay online and leave the page open until the cache update finishes.";
+              else if (appCache.status === appCache.UPDATEREADY) cacheAdvice = "Reload the home page to apply the downloaded cache update.";
+              else if (appCache.status === appCache.OBSOLETE) cacheAdvice = "Reconnect and reload the home page so the cache can be rebuilt.";
+              cacheCheck = addCheck("Legacy offline cache", cacheLevel, "Application Cache state: " + cacheState + ".", cacheAdvice);
+            }
+          } catch (error) {
+            cacheCheck = addCheck("Legacy offline cache", "warn", "The browser could not read its offline-cache status.", "Stay online while using the site; reload the home page when connected if content looks stale.");
+          }
+
+          var logoCheck = addCheck("Dids Bot logo", "checking", "Checking the logo image…", "");
+          var logo = document.getElementById("logo");
+          function updateLogo() {
+            if (logo.complete && logo.naturalWidth > 0) logoCheck.set("ok", "The Dids Bot logo loaded successfully.", "");
+            else if (logo.complete) logoCheck.set("error", "The logo image did not load.", "Check that dids-bot-logo.gif is beside the HTML pages, then reload.");
+          }
+          logo.addEventListener("load", updateLogo);
+          logo.addEventListener("error", function () {
+            logoCheck.set("error", "The logo image did not load.", "Check that dids-bot-logo.gif is beside the HTML pages, then reload.");
+          });
+          updateLogo();
+          renderSummary();
+          updateReport();
+        }
+
+        function updateReport() {
+          var lines = [];
+          lines.push("Dids PS4 Help & Diagnostics - browser report");
+          lines.push("Created: " + new Date().toISOString());
+          lines.push("Page: " + location.protocol + (location.host ? "//" + location.host : ""));
+          lines.push("Browser online flag: " + (navigator.onLine === false ? "offline" : "online"));
+          lines.push("This report omits error-helper text and does not contain PS4 system logs.");
+          lines.push("");
+          lines.push("Checks:");
+          checkResults.forEach(function (item) {
+            lines.push("- [" + item.level.toUpperCase() + "] " + item.title + ": " + item.detail + (item.advice ? " Suggested action: " + item.advice : ""));
+          });
+          lines.push("");
+          lines.push("Page errors observed: " + capturedErrors.length);
+          capturedErrors.forEach(function (entry) { lines.push("- " + entry); });
+          var report = document.getElementById("report-text");
+          if (report) report.value = lines.join("\n");
+        }
+
+        document.getElementById("run-checks").addEventListener("click", runChecks);
+        document.getElementById("copy-report").addEventListener("click", function () {
+          updateReport();
+          var report = document.getElementById("report-text");
+          var message = document.getElementById("report-message");
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(report.value).then(function () {
+              message.textContent = "Report copied. Review it before sharing.";
+            }).catch(function () {
+              report.focus();
+              report.select();
+              message.textContent = "Clipboard access was blocked. The report is selected so you can copy it manually.";
+            });
+          } else {
+            report.focus();
+            report.select();
+            message.textContent = "Automatic clipboard access is unavailable. The report is selected so you can copy it manually.";
+          }
+        });
+        document.getElementById("download-report").addEventListener("click", function () {
+          updateReport();
+          var message = document.getElementById("report-message");
+          if (typeof window.Blob !== "function" || !window.URL || !window.URL.createObjectURL) {
+            message.textContent = "This browser cannot download a report. Select the report text and copy it manually.";
+            return;
+          }
+          try {
+            var blob = new Blob([document.getElementById("report-text").value], { type: "text/plain;charset=utf-8" });
+            var url = window.URL.createObjectURL(blob);
+            var link = document.createElement("a");
+            link.href = url;
+            link.download = "dids-browser-diagnostics.txt";
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            window.setTimeout(function () { window.URL.revokeObjectURL(url); }, 1000);
+            message.textContent = "Download requested. If the browser blocks downloads, select and copy the report text.";
+          } catch (error) {
+            message.textContent = "The browser could not create a download. Select and copy the report text instead.";
+          }
+        });
+
+        updateErrorWatch();
+        runChecks();
+      })();
+    </script>
+  </body>
+</html>
