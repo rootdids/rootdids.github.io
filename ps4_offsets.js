@@ -540,6 +540,9 @@ PS4["13.50"] = {
 
 PS4["13.52"] = Object.assign({}, PS4["13.50"], {
   alias_of: "13.50",
+  public_launch_disabled: true,
+  public_launch_reason:
+    "Firmware 13.52 is not verified in this public build. Its kernel patch is offline-only and the payload has not been confirmed on hardware, so this page did not start an exploit. If another launcher says HEN is already installed, this page cannot verify that launcher’s HEN state.",
 
   k_idt_rsvd: 0x1c1e00,
 

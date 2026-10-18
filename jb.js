@@ -54,14 +54,23 @@ if (SHOW_LOG && document.body) document.body.className = "log";
 function finishUI(ok) {
   if (SHOW_LOG || !document.body) return;
   const m = document.getElementById("msg");
+  const already = jailbroken && !payloadRunning;
   if (m)
     m.textContent = ok
       ? "DONE"
       : firmwareIssue ||
-        (armedEver
-          ? "Restart your console"
-          : "Refresh the page and run again");
-  document.body.className = ok ? "done" : firmwareIssue ? "unsupported" : "fail";
+        (already
+          ? "Existing kernel access was detected. This page did not launch another payload. Check the launcher already in use because this page cannot confirm its HEN state."
+          : armedEver
+            ? "The attempt did not complete, and payload status was not confirmed. Restart the console before considering another attempt; check the first failure in the diagnostic log."
+            : "The run did not complete. Check the firmware and diagnostic log before trying again.");
+  document.body.className = ok
+    ? "done"
+    : firmwareIssue
+      ? "unsupported"
+      : already
+        ? "notice"
+        : "fail";
 }
 function mark(tag, detail) {
   const raw = detail;
@@ -166,6 +175,15 @@ let allDone = false,
       return;
     }
     const fwKey = key || "unknown";
+
+    if (off.public_launch_disabled) {
+      firmwareIssue =
+        off.public_launch_reason ||
+        "This firmware profile is disabled in the public build because its patch and payload have not been validated on hardware. No exploit was started.";
+      state(firmwareIssue, "bad");
+      mark("FW-BLOCKED", fwKey + " -- no exploit started");
+      return;
+    }
 
     const DO_JB = params.get("jb") !== "0";
     const DO_PATCH = params.get("patch") !== "0";
@@ -652,7 +670,11 @@ let allDone = false,
             "JB-ALREADY",
             "kernel already patched -- 663 race skipped, pid=" + pid,
           );
-          if (DO_PAYLOAD) await relaunchPayload();
+          if (DO_PAYLOAD)
+            mark(
+              "PAYLOAD-SKIP",
+              "existing kernel access detected; skipped a second payload launch",
+            );
           mark(
             "EG-VERDICT",
             "fw=" +

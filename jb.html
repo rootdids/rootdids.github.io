@@ -144,10 +144,12 @@
       body.fail #msg {
         display: block;
       }
-      body.unsupported #spin {
+      body.unsupported #spin,
+      body.notice #spin {
         display: none;
       }
-      body.unsupported #msg {
+      body.unsupported #msg,
+      body.notice #msg {
         display: block;
         box-sizing: border-box;
         left: 18px;
@@ -324,7 +326,7 @@
     </script>
     <script src="typewriter.js"></script>
     <script type="module">
-      import "./jb.js?v=21";
+      import "./jb.js?v=22";
     </script>
   </body>
 </html>

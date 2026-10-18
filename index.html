@@ -154,12 +154,11 @@
     function setCache(t, ok) { cacheEl.textContent = t; cacheEl.className = ok ? "cacheok" : ""; }
     var params = new URLSearchParams(location.search);
 
-    // Firmwares this build has a MEASURED kernel table for. jb.js still runs its
-    // own kernel-table-present gate, so this is UX only -- an unlisted firmware
-    // can still be launched with a tap. KEEP IN SYNC with ps4_offsets.js: add a
-    // fwnum here in the SAME commit that fills that firmware's kernel RVAs.
+    // Firmware profiles listed in this build. jb.js applies the launch block
+    // for profiles that are not validated for public use.
     // The PS4 reports its minor as two hex digits in the UA (13.52 -> minor 0x52).
-    var SUPPORTED = { 1302: 1, 1304: 1, 1350: 1, 1352: 1 }; // all measured on hardware
+    var SUPPORTED = { 1302: 1, 1304: 1, 1350: 1 };
+    var BLOCKED = { 1352: 1 };
 
     var key = null, fwnum = null;
     var m = /PlayStation\s+4[\/ ](\d+)\.(\d+)/.exec(navigator.userAgent);
@@ -171,15 +170,23 @@
     }
 
     var forced = params.get("force") === "1";
-    var supported = forced || (fwnum !== null && SUPPORTED[fwnum] === 1);
+    var blocked = fwnum !== null && BLOCKED[fwnum] === 1;
+    var supported = !blocked && (forced || (fwnum !== null && SUPPORTED[fwnum] === 1));
     detEl.innerHTML = "firmware <b>" + (key || "unknown") + "</b>"
-        + (supported ? " &middot; <b>supported</b>"
+        + (blocked ? " &middot; <b>not verified; launch disabled</b>"
+                   : supported ? " &middot; <b>profile listed</b>"
                      : " &middot; not in this build's kernel table");
 
     var target = "jb.html" + location.search;
     document.getElementById("jb-tool-link").href = target;
-    setState(supported ? "JB TOOL READY" : "FIRMWARE NOT LISTED", supported ? "ok" : "warn");
-    setCache("Select JB Tool to open its existing page.", supported);
+    var stateText = blocked ? "13.52 NOT VERIFIED"
+        : supported ? "JB PROFILE LISTED" : "FIRMWARE NOT LISTED";
+    var stateClass = blocked || !supported ? "warn" : "ok";
+    var cacheText = blocked
+        ? "The JB page explains why this firmware is disabled in the public build."
+        : "Select JB Tool to open its existing page.";
+    setState(stateText, stateClass);
+    setCache(cacheText, supported);
 })();
 </script>
 <script src="typewriter.js"></script>
