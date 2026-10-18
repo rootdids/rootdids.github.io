@@ -157,8 +157,7 @@
     // Firmware profiles listed in this build. jb.js applies the launch block
     // for profiles that are not validated for public use.
     // The PS4 reports its minor as two hex digits in the UA (13.52 -> minor 0x52).
-    var SUPPORTED = { 1302: 1, 1304: 1, 1350: 1 };
-    var BLOCKED = { 1352: 1 };
+    var PROFILES = { 1302: 1, 1304: 1, 1350: 1, 1352: 1 };
 
     var key = null, fwnum = null;
     var m = /PlayStation\s+4[\/ ](\d+)\.(\d+)/.exec(navigator.userAgent);
@@ -170,23 +169,23 @@
     }
 
     var forced = params.get("force") === "1";
-    var blocked = fwnum !== null && BLOCKED[fwnum] === 1;
-    var supported = !blocked && (forced || (fwnum !== null && SUPPORTED[fwnum] === 1));
+    var listed = forced || (fwnum !== null && PROFILES[fwnum] === 1);
+    var unverified = fwnum === 1352;
     detEl.innerHTML = "firmware <b>" + (key || "unknown") + "</b>"
-        + (blocked ? " &middot; <b>not verified; launch disabled</b>"
-                   : supported ? " &middot; <b>profile listed</b>"
-                     : " &middot; not in this build's kernel table");
+        + (unverified ? " &middot; <b>profile listed; hardware status unverified</b>"
+                      : listed ? " &middot; <b>profile listed</b>"
+                               : " &middot; not in this build's kernel table");
 
     var target = "jb.html" + location.search;
     document.getElementById("jb-tool-link").href = target;
-    var stateText = blocked ? "13.52 NOT VERIFIED"
-        : supported ? "JB PROFILE LISTED" : "FIRMWARE NOT LISTED";
-    var stateClass = blocked || !supported ? "warn" : "ok";
-    var cacheText = blocked
-        ? "The JB page explains why this firmware is disabled in the public build."
+    var stateText = unverified ? "13.52 PROFILE LISTED — UNVERIFIED"
+        : listed ? "JB PROFILE LISTED" : "FIRMWARE NOT LISTED";
+    var stateClass = unverified || !listed ? "warn" : "ok";
+    var cacheText = unverified
+        ? "The JB page will follow the 13.52 profile, but hardware success is not confirmed."
         : "Select JB Tool to open its existing page.";
     setState(stateText, stateClass);
-    setCache(cacheText, supported);
+    setCache(cacheText, listed);
 })();
 </script>
 <script src="typewriter.js"></script>
