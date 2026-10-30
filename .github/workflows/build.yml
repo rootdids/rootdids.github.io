@@ -12,6 +12,7 @@ jobs:
     runs-on: ubuntu-22.04
     permissions:
       contents: write
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -19,67 +20,101 @@ jobs:
       - name: System deps
         run: |
           sudo apt-get update
-          sudo apt-get install -y xxd curl git tar
+          sudo apt-get install -y xxd curl git tar jq clang lld
 
       - name: Install OpenOrbis PS4 toolchain
+        shell: bash
         run: |
           set -eux
           mkdir -p "$HOME/oo"
           cd "$HOME/oo"
-          # Pinned to a known-published release tag; falls back to latest if gone.
-          VER="v0.5.2"
-          URL="https://github.com/OpenOrbis/OpenOrbis-PS4-Toolchain/releases/download/${VER}/OpenOrbis-PS4-Toolchain.tar.gz"
-          if curl -fsSL -o oo.tar.gz "$URL"; then
-            echo "fetched pinned $VER"
-          else
-            echo "pinned release not reachable, trying latest"
-            LATEST=$(curl -fsSL https://api.github.com/repos/OpenOrbis/OpenOrbis-PS4-Toolchain/releases/latest \
-              | grep browser_download_url | grep -i 'tar.gz' | head -n1 | cut -d'"' -f4)
-            if [ -z "$LATEST" ]; then
-              echo "no release asset found; aborting"
-              exit 1
+          # Try several known asset patterns, newest first. Each probe fetches
+          # the releases index and picks a .tar.gz / .zip whose name mentions
+          # "linux" or "toolchain". First one to download + extract wins.
+          RELS=$(curl -fsSL https://api.github.com/repos/OpenOrbis/OpenOrbis-PS4-Toolchain/releases)
+          ASSET=$(echo "$RELS" | jq -r '[.[]?.assets[]? | select(.name|test("(linux|toolchain).*(tar\\.gz|zip)";"i"))] | .[0]?.browser_download_url // empty')
+          if [ -z "$ASSET" ]; then
+            echo "no OO release asset matched; falling back to building SDK from source"
+            git clone --depth 1 https://github.com/OpenOrbis/OpenOrbis-PS4-Toolchain.git src
+            # SDK ships prebuilt libs under a Toolchain/ folder when present
+            if [ -d src/Toolchain ]; then
+              cp -r src/Toolchain OpenOrbis-PS4-Toolchain
+            else
+              echo "cannot locate prebuilt libs in source checkout"
+              ls -la src
+              exit 2
             fi
-            curl -fsSL -o oo.tar.gz "$LATEST"
-          fi
-          tar -xzf oo.tar.gz
-          # Toolchain root is either OpenOrbis-PS4-Toolchain or OpenOrbis
-          if [ -d OpenOrbis-PS4-Toolchain ]; then
-            echo "OO_PS4_TOOLCHAIN=$HOME/oo/OpenOrbis-PS4-Toolchain" >> "$GITHUB_ENV"
-          elif [ -d OpenOrbis ]; then
-            echo "OO_PS4_TOOLCHAIN=$HOME/oo/OpenOrbis" >> "$GITHUB_ENV"
           else
-            echo "could not locate toolchain root under $HOME/oo"
-            ls -la "$HOME/oo"
-            exit 1
+            echo "downloading $ASSET"
+            curl -fsSL -o oo-pack "$ASSET"
+            case "$ASSET" in
+              *.zip)    unzip -q oo-pack ;;
+              *.tar.gz) tar -xzf oo-pack ;;
+            esac
           fi
+          # Locate toolchain root (first dir containing bin/clang or include/)
+          ROOT=$(find "$HOME/oo" -maxdepth 3 -type d \( -name 'OpenOrbis*' -o -name 'OpenOrbis-PS4-Toolchain' \) 2>/dev/null | head -n1)
+          if [ -z "$ROOT" ]; then
+            echo "could not locate OO root under $HOME/oo"
+            ls -la "$HOME/oo"
+            exit 3
+          fi
+          echo "OO_PS4_TOOLCHAIN=$ROOT" >> "$GITHUB_ENV"
+          echo "resolved OO root: $ROOT"
+          ls -la "$ROOT"
 
       - name: Install GoldHEN plugin SDK headers
+        shell: bash
         run: |
           set -eux
           git clone --depth 1 https://github.com/GoldHEN/GoldHEN_Plugin_SDK.git "$HOME/goldhen-sdk" || \
-          git clone --depth 1 https://github.com/SiSTR0/GoldHEN_Plugin_SDK.git "$HOME/goldhen-sdk"
-          mkdir -p "$OO_PS4_TOOLCHAIN/include/goldhen"
-          if [ -d "$HOME/goldhen-sdk/plugin/include" ]; then
-            cp -r "$HOME/goldhen-sdk/plugin/include"/* "$OO_PS4_TOOLCHAIN/include/goldhen/"
-          elif [ -d "$HOME/goldhen-sdk/include" ]; then
-            cp -r "$HOME/goldhen-sdk/include"/* "$OO_PS4_TOOLCHAIN/include/goldhen/"
-          else
-            echo "goldhen sdk layout unexpected"; ls -la "$HOME/goldhen-sdk"; exit 1
+          git clone --depth 1 https://github.com/SiSTR0/GoldHEN_Plugin_SDK.git  "$HOME/goldhen-sdk" || \
+          git clone --depth 1 https://github.com/jocover/GoldHEN_Plugin_SDK.git "$HOME/goldhen-sdk" || true
+          if [ ! -d "$HOME/goldhen-sdk" ]; then
+            echo "could not fetch GoldHEN plugin SDK from any known mirror"
+            exit 4
           fi
+          mkdir -p "$OO_PS4_TOOLCHAIN/include/goldhen"
+          # Copy whatever include tree exists
+          for p in "$HOME/goldhen-sdk/plugin/include" "$HOME/goldhen-sdk/include" "$HOME/goldhen-sdk/plugin_sdk/include"; do
+            if [ -d "$p" ]; then
+              cp -r "$p"/* "$OO_PS4_TOOLCHAIN/include/goldhen/" || true
+            fi
+          done
+          ls -la "$OO_PS4_TOOLCHAIN/include/goldhen" || true
 
       - name: Build plugin + installer
         working-directory: plugin
+        shell: bash
         run: |
+          set -eux
           mkdir -p dist
-          make all || (echo "===== build failed ====="; ls -la; cat Makefile; exit 1)
+          # Dump environment context into the Actions log for debugging
+          echo "OO_PS4_TOOLCHAIN=$OO_PS4_TOOLCHAIN"
+          ls -la "$OO_PS4_TOOLCHAIN/bin" || true
+          make all 2>&1 | tee ../build.log || {
+            echo "===== BUILD FAILED ====="
+            tail -n 80 ../build.log
+            exit 5
+          }
+
+      - name: Upload build log on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-log
+          path: build.log
 
       - name: Commit built artifacts
+        if: success()
+        shell: bash
         run: |
+          set -eux
           git config user.name "dids-ci"
           git config user.email "dids-ci@users.noreply.github.com"
           git add plugin/dist/Dids-Hen.prx plugin/dist/dids_installer.bin || true
           if git diff --cached --quiet; then
-            echo "no artifact changes"
+            echo "no artifact changes to commit"
           else
             git commit -m "ci: rebuild plugin + installer"
             git push
