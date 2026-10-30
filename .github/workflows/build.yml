@@ -1,10 +1,5 @@
 name: Build Dids-Hen plugin + installer
 
-# Fires on any push that touches the plugin tree. Compiles both artifacts
-# using the Open Orbis / PS4 Payload SDK, then commits them back to the repo
-# under plugin/dist/ so GitHub Pages serves them straight away. One push,
-# both bins land in the repo, site has them in the next deploy.
-
 on:
   push:
     paths:
@@ -14,43 +9,78 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     permissions:
       contents: write
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Install xxd
-        run: sudo apt-get update && sudo apt-get install -y xxd
-
-      - name: Fetch Open Orbis toolchain
+      - name: System deps
         run: |
+          sudo apt-get update
+          sudo apt-get install -y xxd curl git tar
+
+      - name: Install OpenOrbis PS4 toolchain
+        run: |
+          set -eux
           mkdir -p "$HOME/oo"
           cd "$HOME/oo"
-          curl -L -o oo.zip https://github.com/OpenOrbis/OpenOrbis-PS4-Toolchain/releases/latest/download/toolchain.tar.gz
-          tar -xzf oo.zip
-          echo "OO_PS4_TOOLCHAIN=$HOME/oo/OpenOrbis-PS4-Toolchain" >> "$GITHUB_ENV"
+          # Pinned to a known-published release tag; falls back to latest if gone.
+          VER="v0.5.2"
+          URL="https://github.com/OpenOrbis/OpenOrbis-PS4-Toolchain/releases/download/${VER}/OpenOrbis-PS4-Toolchain.tar.gz"
+          if curl -fsSL -o oo.tar.gz "$URL"; then
+            echo "fetched pinned $VER"
+          else
+            echo "pinned release not reachable, trying latest"
+            LATEST=$(curl -fsSL https://api.github.com/repos/OpenOrbis/OpenOrbis-PS4-Toolchain/releases/latest \
+              | grep browser_download_url | grep -i 'tar.gz' | head -n1 | cut -d'"' -f4)
+            if [ -z "$LATEST" ]; then
+              echo "no release asset found; aborting"
+              exit 1
+            fi
+            curl -fsSL -o oo.tar.gz "$LATEST"
+          fi
+          tar -xzf oo.tar.gz
+          # Toolchain root is either OpenOrbis-PS4-Toolchain or OpenOrbis
+          if [ -d OpenOrbis-PS4-Toolchain ]; then
+            echo "OO_PS4_TOOLCHAIN=$HOME/oo/OpenOrbis-PS4-Toolchain" >> "$GITHUB_ENV"
+          elif [ -d OpenOrbis ]; then
+            echo "OO_PS4_TOOLCHAIN=$HOME/oo/OpenOrbis" >> "$GITHUB_ENV"
+          else
+            echo "could not locate toolchain root under $HOME/oo"
+            ls -la "$HOME/oo"
+            exit 1
+          fi
 
-      - name: Fetch GoldHEN plugin SDK headers
+      - name: Install GoldHEN plugin SDK headers
         run: |
-          cd "$OO_PS4_TOOLCHAIN"
-          git clone --depth 1 https://github.com/GoldHEN/GoldHEN_Plugin_SDK.git goldhen-sdk
-          mkdir -p include/goldhen
-          cp -r goldhen-sdk/plugin/include/* include/goldhen/
+          set -eux
+          git clone --depth 1 https://github.com/GoldHEN/GoldHEN_Plugin_SDK.git "$HOME/goldhen-sdk" || \
+          git clone --depth 1 https://github.com/SiSTR0/GoldHEN_Plugin_SDK.git "$HOME/goldhen-sdk"
+          mkdir -p "$OO_PS4_TOOLCHAIN/include/goldhen"
+          if [ -d "$HOME/goldhen-sdk/plugin/include" ]; then
+            cp -r "$HOME/goldhen-sdk/plugin/include"/* "$OO_PS4_TOOLCHAIN/include/goldhen/"
+          elif [ -d "$HOME/goldhen-sdk/include" ]; then
+            cp -r "$HOME/goldhen-sdk/include"/* "$OO_PS4_TOOLCHAIN/include/goldhen/"
+          else
+            echo "goldhen sdk layout unexpected"; ls -la "$HOME/goldhen-sdk"; exit 1
+          fi
 
       - name: Build plugin + installer
         working-directory: plugin
-        run: make all
+        run: |
+          mkdir -p dist
+          make all || (echo "===== build failed ====="; ls -la; cat Makefile; exit 1)
 
       - name: Commit built artifacts
         run: |
           git config user.name "dids-ci"
           git config user.email "dids-ci@users.noreply.github.com"
-          git add plugin/dist/Dids-Hen.prx plugin/dist/dids_installer.bin
-          if ! git diff --cached --quiet; then
+          git add plugin/dist/Dids-Hen.prx plugin/dist/dids_installer.bin || true
+          if git diff --cached --quiet; then
+            echo "no artifact changes"
+          else
             git commit -m "ci: rebuild plugin + installer"
             git push
-          else
-            echo "no artifact changes to commit"
           fi
