@@ -1,0 +1,56 @@
+name: Build Dids-Hen plugin + installer
+
+# Fires on any push that touches the plugin tree. Compiles both artifacts
+# using the Open Orbis / PS4 Payload SDK, then commits them back to the repo
+# under plugin/dist/ so GitHub Pages serves them straight away. One push,
+# both bins land in the repo, site has them in the next deploy.
+
+on:
+  push:
+    paths:
+      - 'plugin/**'
+      - '.github/workflows/build.yml'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install xxd
+        run: sudo apt-get update && sudo apt-get install -y xxd
+
+      - name: Fetch Open Orbis toolchain
+        run: |
+          mkdir -p "$HOME/oo"
+          cd "$HOME/oo"
+          curl -L -o oo.zip https://github.com/OpenOrbis/OpenOrbis-PS4-Toolchain/releases/latest/download/toolchain.tar.gz
+          tar -xzf oo.zip
+          echo "OO_PS4_TOOLCHAIN=$HOME/oo/OpenOrbis-PS4-Toolchain" >> "$GITHUB_ENV"
+
+      - name: Fetch GoldHEN plugin SDK headers
+        run: |
+          cd "$OO_PS4_TOOLCHAIN"
+          git clone --depth 1 https://github.com/GoldHEN/GoldHEN_Plugin_SDK.git goldhen-sdk
+          mkdir -p include/goldhen
+          cp -r goldhen-sdk/plugin/include/* include/goldhen/
+
+      - name: Build plugin + installer
+        working-directory: plugin
+        run: make all
+
+      - name: Commit built artifacts
+        run: |
+          git config user.name "dids-ci"
+          git config user.email "dids-ci@users.noreply.github.com"
+          git add plugin/dist/Dids-Hen.prx plugin/dist/dids_installer.bin
+          if ! git diff --cached --quiet; then
+            git commit -m "ci: rebuild plugin + installer"
+            git push
+          else
+            echo "no artifact changes to commit"
+          fi
