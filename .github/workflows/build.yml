@@ -63,26 +63,6 @@ jobs:
           echo "resolved OO root: $ROOT"
           ls -la "$ROOT"
 
-      - name: Install GoldHEN plugin SDK headers
-        shell: bash
-        run: |
-          set -eux
-          git clone --depth 1 https://github.com/GoldHEN/GoldHEN_Plugin_SDK.git "$HOME/goldhen-sdk" || \
-          git clone --depth 1 https://github.com/SiSTR0/GoldHEN_Plugin_SDK.git  "$HOME/goldhen-sdk" || \
-          git clone --depth 1 https://github.com/jocover/GoldHEN_Plugin_SDK.git "$HOME/goldhen-sdk" || true
-          if [ ! -d "$HOME/goldhen-sdk" ]; then
-            echo "could not fetch GoldHEN plugin SDK from any known mirror"
-            exit 4
-          fi
-          mkdir -p "$OO_PS4_TOOLCHAIN/include/goldhen"
-          # Copy whatever include tree exists
-          for p in "$HOME/goldhen-sdk/plugin/include" "$HOME/goldhen-sdk/include" "$HOME/goldhen-sdk/plugin_sdk/include"; do
-            if [ -d "$p" ]; then
-              cp -r "$p"/* "$OO_PS4_TOOLCHAIN/include/goldhen/" || true
-            fi
-          done
-          ls -la "$OO_PS4_TOOLCHAIN/include/goldhen" || true
-
       - name: Build plugin + installer
         working-directory: plugin
         shell: bash

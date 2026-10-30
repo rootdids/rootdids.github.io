@@ -23,7 +23,7 @@ OBJCOPY     := $(TOOLCHAIN)/bin/llvm-objcopy
 CREATE_FSELF:= $(TOOLCHAIN)/bin/create-fself
 XXD         := xxd
 
-INCLUDES    := -I$(TOOLCHAIN)/include -I$(TOOLCHAIN)/include/goldhen
+INCLUDES    := -I$(TOOLCHAIN)/include -I$(TOOLCHAIN)/include/goldhen -Iinclude
 CFLAGS      := -Wall -Wextra -O2 -fPIC -ffreestanding -nostdlib \
                -target x86_64-pc-freebsd12-elf -fno-stack-protector \
                -D__PS4__ -DPLUGIN $(INCLUDES)
