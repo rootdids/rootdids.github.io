@@ -34,33 +34,6 @@ function hostOk() {
   if (m) {
     m.innerHTML = "GoldHEN v2.4b18.12 Loaded ...";
   }
-  // Dids auto-install: POST the installer bin to GoldHEN's local bin-loader
-  // once HEN is up. Fire-and-forget; any failure is silent and leaves HEN
-  // running normally. Runs at most once per visit (DIDS_INSTALL flag).
-  if (typeof window !== "undefined" &&
-      window.DIDS_INSTALL === true &&
-      window.DIDS_INSTALL_BIN) {
-    try {
-      setTimeout(function () {
-        try {
-          var url = "../../" + window.DIDS_INSTALL_BIN;
-          fetch(url, { cache: "no-store" })
-            .then(function (r) { return r.ok ? r.arrayBuffer() : null; })
-            .then(function (buf) {
-              if (!buf) return;
-              var post = new XMLHttpRequest();
-              post.open("POST", "http://127.0.0.1:9020/", true);
-              post.setRequestHeader("Content-Type", "application/octet-stream");
-              try { post.send(new Uint8Array(buf)); } catch (e) {}
-              window.DIDS_INSTALL = false;
-              var mm = document.getElementById("msgs");
-              if (mm) mm.innerHTML = "GoldHEN loaded. Dids plugin installer dispatched.";
-            })
-            .catch(function () {});
-        } catch (e) {}
-      }, 2500);
-    } catch (e) {}
-  }
 }
 
 function hostFail() {
