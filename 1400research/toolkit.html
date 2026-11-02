@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>PS4 14.00 BD-J Analysis Toolkit by Dids (@z.z6)</title>
+<link rel="stylesheet" href="../style.css">
+<style>
+body { overflow-y: auto; }
+.panel { background:rgba(0,0,0,0.7); border:1px solid #333; border-radius:6px; padding:16px; margin:10px auto; max-width:960px; text-align:left; }
+.panel h2 { color:#daa520; font-size:16px; margin:0 0 10px 0; text-shadow:none; }
+.mono { font-family:monospace; font-size:13px; color:#9cd1ff; }
+.hex-out { background:#0a0a0a; color:#0f0; font-family:monospace; font-size:12px; padding:12px; max-height:400px; overflow-y:auto; white-space:pre; border:1px solid #222; margin:8px 0; }
+.str-out { background:#0a0a0a; color:#f0a030; font-family:monospace; font-size:12px; padding:12px; max-height:300px; overflow-y:auto; white-space:pre-wrap; word-break:break-all; border:1px solid #222; margin:8px 0; }
+.class-out { background:#0a0a0a; color:#ccc; font-family:monospace; font-size:12px; padding:12px; max-height:500px; overflow-y:auto; white-space:pre-wrap; border:1px solid #222; margin:8px 0; }
+.diff-out { background:#0a0a0a; color:#ccc; font-family:monospace; font-size:12px; padding:12px; max-height:500px; overflow-y:auto; white-space:pre-wrap; border:1px solid #222; margin:8px 0; }
+.diff-add { color:#4ec94e; }
+.diff-del { color:#e04040; }
+.diff-hdr { color:#daa520; }
+.tab-row { margin-bottom:12px; }
+.tool-tab { display:inline-block; padding:8px 16px; margin:2px; cursor:pointer; border-radius:4px 4px 0 0; font-size:14px; }
+.tool-tab.active { background:#003263; color:white; }
+.tool-tab.inactive { background:#1a1a2e; color:#888; }
+.tool-tab:hover { background:#0069d9; color:white; }
+.file-select { background:#111; color:#9cd1ff; border:1px solid #444; padding:6px 10px; font-size:13px; font-family:monospace; border-radius:3px; margin:4px; }
+.run-btn { background:#003263; color:white; border:none; padding:6px 16px; font-size:13px; cursor:pointer; border-radius:3px; margin:4px; }
+.run-btn:hover { background:#0069d9; }
+.tag { display:inline-block; padding:1px 6px; border-radius:3px; font-size:11px; margin:0 3px; }
+.tag-u2 { background:#4b0082; color:#ddd; }
+.tag-str { background:#8b4513; color:#ddd; }
+.tag-int { background:#006400; color:#ddd; }
+.tag-cls { background:#8b0000; color:#ddd; }
+.tag-method { background:#003263; color:#ddd; }
+.tag-field { background:#555; color:#ddd; }
+.tag-nat { background:#2e4a1e; color:#ddd; }
+.tag-ref { background:#1a3a5c; color:#ddd; }
+.summary-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin:8px 0; }
+.summary-card { background:#111; border:1px solid #333; border-radius:4px; padding:10px; }
+.summary-card h3 { color:#daa520; font-size:13px; margin:0 0 4px 0; text-shadow:none; }
+.summary-card .val { color:#9cd1ff; font-size:20px; font-family:monospace; }
+</style>
+</head>
+<body>
+<h1 id="msgs">PS4 14.00 BD-J Analysis Toolkit by Dids (@z.z6)</h1>
+<hr>
+
+<div class="tab-row" style="text-align:center">
+<span class="tool-tab active" id="ttab-class" onclick="showTool('class')">Class Viewer</span>
+<span class="tool-tab inactive" id="ttab-hex" onclick="showTool('hex')">Hex / Strings</span>
+<span class="tool-tab inactive" id="ttab-manifest" onclick="showTool('manifest')">Manifest</span>
+<span class="tool-tab inactive" id="ttab-diff" onclick="showTool('diff')">Disc Diff</span>
+<span class="tool-tab inactive" id="ttab-overview" onclick="showTool('overview')">Overview</span>
+</div>
+
+<!-- CLASS VIEWER -->
+<div id="tool-class" class="panel">
+<h2>Java .class File Structure Viewer</h2>
+<p class="mono">Parses the Java class file format — magic, version, constant pool, fields, methods, attributes.</p>
+<select id="class-select" class="file-select">
+<optgroup label="GOLDHEN14 — JAR classes">
+<option value="disc-goldhen14/jar/org/bdj/InitXlet.class">InitXlet.class (Xlet entry)</option>
+<option value="disc-goldhen14/jar/org/bdj/Boot.class">Boot.class</option>
+<option value="disc-goldhen14/jar/org/bdj/Cfg.class">Cfg.class</option>
+<option value="disc-goldhen14/jar/org/bdj/Screen.class">Screen.class</option>
+<option value="disc-goldhen14/jar/org/bdj/OfflineRenderer.class">OfflineRenderer.class</option>
+<option value="disc-goldhen14/jar/org/bdj/LocalResultLedger.class">LocalResultLedger.class</option>
+<option value="disc-goldhen14/jar/org/bdj/Boot$1.class">Boot$1.class</option>
+<option value="disc-goldhen14/jar/org/bdj/Boot$L.class">Boot$L.class</option>
+<option value="disc-goldhen14/jar/org/bdj/InitXlet$Attempt.class">InitXlet$Attempt.class</option>
+<option value="disc-goldhen14/jar/org/bdj/InitXlet$Lines.class">InitXlet$Lines.class</option>
+<option value="disc-goldhen14/jar/org/bdj/Screen$1.class">Screen$1.class</option>
+<option value="disc-goldhen14/jar/org/bdj/Screen$2.class">Screen$2.class</option>
+</optgroup>
+<optgroup label="GOLDHEN14 — Offline classes">
+<option value="disc-goldhen14/offline/Hx1400.class">Hx1400.class (56KB main stage)</option>
+<option value="disc-goldhen14/offline/J196rR.class">J196rR.class</option>
+<option value="disc-goldhen14/offline/AXZXkk.class">AXZXkk.class</option>
+<option value="disc-goldhen14/offline/EkIKZR.class">EkIKZR.class</option>
+</optgroup>
+<optgroup label="BONKHEN — JAR classes">
+<option value="disc-bonkhen/jar/org/bdj/InitXlet.class">InitXlet.class</option>
+<option value="disc-bonkhen/jar/org/bdj/Boot.class">Boot.class</option>
+<option value="disc-bonkhen/jar/org/bdj/Cfg.class">Cfg.class</option>
+<option value="disc-bonkhen/jar/org/bdj/Screen.class">Screen.class</option>
+<option value="disc-bonkhen/jar/org/bdj/OfflineRenderer.class">OfflineRenderer.class</option>
+</optgroup>
+<optgroup label="BONKHEN — Offline classes">
+<option value="disc-bonkhen/offline/Hx1400.class">Hx1400.class</option>
+<option value="disc-bonkhen/offline/J196rR.class">J196rR.class</option>
+</optgroup>
+</select>
+<button class="run-btn" onclick="parseClass()">Parse</button>
+<div id="class-result" class="class-out" style="display:none"></div>
+</div>
+
+<!-- HEX / STRINGS VIEWER -->
+<div id="tool-hex" class="panel" style="display:none">
+<h2>Hex Dump &amp; String Extraction</h2>
+<p class="mono">View raw bytes and extract printable strings from any file.</p>
+<select id="hex-select" class="file-select">
+<optgroup label="Payloads">
+<option value="disc-goldhen14/jar/bonk/hen.bin">GOLDHEN14 — hen.bin (550KB)</option>
+<option value="disc-bonkhen/jar/bonk/hen.bin">BONKHEN — hen.bin (550KB)</option>
+</optgroup>
+<optgroup label="Metadata">
+<option value="disc-goldhen14/jar/bonk/local/guards.bin">guards.bin</option>
+<option value="disc-goldhen14/jar/bonk/local/rules.bin">rules.bin</option>
+<option value="disc-goldhen14/jar/bonk/local/shapes.bin">shapes.bin</option>
+<option value="disc-goldhen14/jar/bonk/local/schedule.bin">schedule.bin</option>
+<option value="disc-goldhen14/jar/bonk/local/marker-sites.bin">marker-sites.bin</option>
+<option value="disc-goldhen14/jar/bonk/local/write-sites.bin">write-sites.bin</option>
+<option value="disc-goldhen14/jar/bonk/local/template-hashes.bin">template-hashes.bin</option>
+</optgroup>
+<optgroup label="Command Templates (sample)">
+<option value="disc-goldhen14/jar/bonk/local/templates/cmd-0002.bin">cmd-0002.bin</option>
+<option value="disc-goldhen14/jar/bonk/local/templates/cmd-0007.bin">cmd-0007.bin</option>
+<option value="disc-goldhen14/jar/bonk/local/templates/cmd-0015.bin">cmd-0015.bin</option>
+<option value="disc-goldhen14/jar/bonk/local/templates/cmd-0024.bin">cmd-0024.bin</option>
+<option value="disc-goldhen14/jar/bonk/local/templates/cmd-0036.bin">cmd-0036.bin</option>
+<option value="disc-goldhen14/jar/bonk/local/templates/cmd-0046.bin">cmd-0046.bin</option>
+</optgroup>
+<optgroup label="BD-J Permission">
+<option value="disc-goldhen14/jar/org/bdj/bluray.InitXlet.perm">bluray.InitXlet.perm (XML)</option>
+</optgroup>
+<optgroup label="Disc info">
+<option value="disc-goldhen14/NOTICE.txt">GOLDHEN14 NOTICE.txt</option>
+<option value="disc-bonkhen/NOTICE.txt">BONKHEN NOTICE.txt</option>
+</optgroup>
+</select>
+<button class="run-btn" onclick="hexView()">Hex Dump</button>
+<button class="run-btn" onclick="strView()">Strings</button>
+<span class="mono" style="margin-left:8px;">Show first <input id="hex-len" type="number" value="1024" min="64" max="65536" style="width:70px;background:#111;color:#9cd1ff;border:1px solid #444;padding:3px;font-family:monospace;"> bytes</span>
+<div id="hex-result" class="hex-out" style="display:none"></div>
+<div id="str-result" class="str-out" style="display:none"></div>
+</div>
+
+<!-- MANIFEST VIEWER -->
+<div id="tool-manifest" class="panel" style="display:none">
+<h2>JAR Manifest &amp; Hash Verification</h2>
+<p class="mono">Computes SHA-256 of each file and shows the JAR manifest SHA-1 entries for cross-reference.</p>
+<select id="mf-disc" class="file-select">
+<option value="goldhen14">GOLDHEN14C1</option>
+<option value="bonkhen">BONKHEN</option>
+</select>
+<button class="run-btn" onclick="loadManifest()">Load Manifest &amp; Verify</button>
+<div id="mf-result" class="class-out" style="display:none"></div>
+</div>
+
+<!-- DISC DIFF -->
+<div id="tool-diff" class="panel" style="display:none">
+<h2>Disc-to-Disc Diff</h2>
+<p class="mono">Compare matching files between GOLDHEN14C1 and BONKHEN to see what changed.</p>
+<button class="run-btn" onclick="runDiff()">Run Diff</button>
+<div id="diff-result" class="diff-out" style="display:none"></div>
+</div>
+
+<!-- OVERVIEW -->
+<div id="tool-overview" class="panel" style="display:none">
+<h2>Disc Overview</h2>
+<p class="mono">Summary stats for both extracted discs.</p>
+<button class="run-btn" onclick="runOverview()">Scan</button>
+<div id="overview-result"></div>
+</div>
+
+<br>
+<button class="btn" onmouseover="msgs.innerHTML='Back to file browser'" onmouseout="msgs.innerHTML='PS4 14.00 BD-J Analysis Toolkit by Dids (@z.z6)'" onclick="location.href='browser.html'"> File Browser </button>
+<button class="btn" onmouseover="msgs.innerHTML='Back to research index'" onmouseout="msgs.innerHTML='PS4 14.00 BD-J Analysis Toolkit by Dids (@z.z6)'" onclick="location.href='index.html'"> Research </button>
+<button class="btn" onmouseover="msgs.innerHTML='Back to main menu'" onmouseout="msgs.innerHTML='PS4 14.00 BD-J Analysis Toolkit by Dids (@z.z6)'" onclick="location.href='../index.html'"> Main Menu </button>
+
+<script>
+// --- Tab switching ---
+function showTool(name){
+  var tools = ["class","hex","manifest","diff","overview"];
+  for(var i=0;i<tools.length;i++){
+    document.getElementById("tool-"+tools[i]).style.display = tools[i]===name?"block":"none";
+    document.getElementById("ttab-"+tools[i]).className = "tool-tab "+(tools[i]===name?"active":"inactive");
+  }
+}
+
+// --- Fetch helper ---
+function fetchBin(path, cb){
+  var xhr = new XMLHttpRequest();
+  xhr.responseType = "arraybuffer";
+  xhr.open("GET", path);
+  xhr.onload = function(){ cb(xhr.status===200 ? new Uint8Array(xhr.response) : null, xhr.status); };
+  xhr.onerror = function(){ cb(null, 0); };
+  xhr.send();
+}
+
+// --- Hex formatting ---
+function fmtHex(arr, maxLen){
+  var lines = [];
+  var len = Math.min(arr.length, maxLen||1024);
+  lines.push("File size: " + arr.length + " bytes  (showing first " + len + ")");
+  lines.push("");
+  for(var off=0; off<len; off+=16){
+    var hex="", ascii="";
+    for(var j=0;j<16;j++){
+      if(off+j<len){
+        var b=arr[off+j];
+        hex += (b<16?"0":"") + b.toString(16) + " ";
+        ascii += (b>=32&&b<127)?String.fromCharCode(b):".";
+      } else { hex+="   "; }
+    }
+    var a = off.toString(16); while(a.length<8) a="0"+a;
+    lines.push(a+"  "+hex+" |"+ascii+"|");
+  }
+  return lines.join("\n");
+}
+
+// --- Extract printable strings ---
+function extractStrings(arr, minLen){
+  minLen = minLen || 4;
+  var results = [], cur = "", startOff = 0;
+  for(var i=0;i<arr.length;i++){
+    var c = arr[i];
+    if(c>=32 && c<127){
+      if(cur.length===0) startOff = i;
+      cur += String.fromCharCode(c);
+    } else {
+      if(cur.length >= minLen){
+        var a = startOff.toString(16); while(a.length<8) a="0"+a;
+        results.push(a + "  " + cur);
+      }
+      cur = "";
+    }
+  }
+  if(cur.length >= minLen){
+    var a = startOff.toString(16); while(a.length<8) a="0"+a;
+    results.push(a + "  " + cur);
+  }
+  return results;
+}
+
+// --- Java Class File Parser ---
+function parseClass(){
+  var path = document.getElementById("class-select").value;
+  var out = document.getElementById("class-result");
+  out.style.display = "block";
+  out.textContent = "Loading " + path + " ...";
+  fetchBin(path, function(arr, status){
+    if(!arr){ out.textContent = "Failed to load: HTTP "+status; return; }
+    try { out.innerHTML = doParseClass(arr, path); }
+    catch(e){ out.textContent = "Parse error: " + e.message + "\n\n" + fmtHex(arr, 256); }
+  });
+}
+
+function doParseClass(d, name){
+  var pos = 0;
+  function u1(){ return d[pos++]; }
+  function u2(){ var v=(d[pos]<<8)|d[pos+1]; pos+=2; return v; }
+  function u4(){ var v=(d[pos]<<24)|(d[pos+1]<<16)|(d[pos+2]<<8)|d[pos+3]; pos+=4; return v>>>0; }
+  function readBytes(n){ var s=d.slice(pos,pos+n); pos+=n; return s; }
+
+  var magic = u4();
+  if(magic !== 0xCAFEBABE) return "Not a valid .class file (magic: 0x"+magic.toString(16)+")";
+  var minor = u2(), major = u2();
+  var cpCount = u2();
+  var cp = [null];
+  var lines = [];
+  lines.push('<span class="diff-hdr">=== ' + name + ' ===</span>');
+  lines.push('Magic:    0xCAFEBABE');
+  lines.push('Version:  ' + major + '.' + minor + ' (Java ' + (major<=44?'1.'+(major-44+1): major<=52?''+(major-44):major) + ')');
+  lines.push('Constant Pool: ' + (cpCount-1) + ' entries');
+  lines.push('');
+
+  var cpLines = [];
+  for(var i=1; i<cpCount; i++){
+    var tag = u1();
+    var entry = {tag:tag, index:i};
+    switch(tag){
+      case 1: // UTF8
+        var len=u2(), bytes=readBytes(len);
+        var s=""; for(var j=0;j<bytes.length;j++) s+=String.fromCharCode(bytes[j]);
+        entry.value = s;
+        cpLines.push('#'+i+' <span class="tag tag-str">Utf8</span> "'+escHtml(s.length>80?s.substr(0,80)+"...":s)+'"');
+        break;
+      case 3: entry.value=u4(); cpLines.push('#'+i+' <span class="tag tag-int">Int</span> '+entry.value); break;
+      case 4: entry.value=u4(); cpLines.push('#'+i+' <span class="tag tag-int">Float</span> '+entry.value); break;
+      case 5: entry.hi=u4(); entry.lo=u4(); cp.push(entry); cp.push(null); i++; cpLines.push('#'+(i-1)+' <span class="tag tag-int">Long</span>'); break;
+      case 6: entry.hi=u4(); entry.lo=u4(); cp.push(entry); cp.push(null); i++; cpLines.push('#'+(i-1)+' <span class="tag tag-int">Double</span>'); break;
+      case 7: entry.nameIdx=u2(); cpLines.push('#'+i+' <span class="tag tag-cls">Class</span> ->#'+entry.nameIdx); break;
+      case 8: entry.strIdx=u2(); cpLines.push('#'+i+' <span class="tag tag-str">String</span> ->#'+entry.strIdx); break;
+      case 9: entry.classIdx=u2(); entry.natIdx=u2(); cpLines.push('#'+i+' <span class="tag tag-ref">FieldRef</span> #'+entry.classIdx+'.#'+entry.natIdx); break;
+      case 10: entry.classIdx=u2(); entry.natIdx=u2(); cpLines.push('#'+i+' <span class="tag tag-ref">MethodRef</span> #'+entry.classIdx+'.#'+entry.natIdx); break;
+      case 11: entry.classIdx=u2(); entry.natIdx=u2(); cpLines.push('#'+i+' <span class="tag tag-ref">InterfaceMethodRef</span> #'+entry.classIdx+'.#'+entry.natIdx); break;
+      case 12: entry.nameIdx=u2(); entry.descIdx=u2(); cpLines.push('#'+i+' <span class="tag tag-nat">NameAndType</span> #'+entry.nameIdx+':#'+entry.descIdx); break;
+      case 15: entry.refKind=u1(); entry.refIdx=u2(); cpLines.push('#'+i+' <span class="tag tag-ref">MethodHandle</span>'); break;
+      case 16: entry.descIdx=u2(); cpLines.push('#'+i+' MethodType'); break;
+      case 18: entry.bsmIdx=u2(); entry.natIdx=u2(); cpLines.push('#'+i+' InvokeDynamic'); break;
+      default: cpLines.push('#'+i+' Unknown tag='+tag); break;
+    }
+    if(tag!==5 && tag!==6) cp.push(entry);
+  }
+
+  function cpUtf8(idx){ return (cp[idx] && cp[idx].tag===1) ? cp[idx].value : '#'+idx; }
+  function cpClass(idx){ return (cp[idx] && cp[idx].tag===7) ? cpUtf8(cp[idx].nameIdx) : '#'+idx; }
+
+  var accessFlags = u2();
+  var thisClass = u2();
+  var superClass = u2();
+  var ifCount = u2();
+  var ifaces = [];
+  for(var i=0;i<ifCount;i++) ifaces.push(cpClass(u2()));
+
+  lines.push('Access:   0x' + accessFlags.toString(16) + ' ' + decodeAccess(accessFlags));
+  lines.push('This:     ' + cpClass(thisClass));
+  lines.push('Super:    ' + cpClass(superClass));
+  if(ifaces.length) lines.push('Implements: ' + ifaces.join(', '));
+  lines.push('');
+
+  // Fields
+  var fieldCount = u2();
+  lines.push('<span class="diff-hdr">--- Fields (' + fieldCount + ') ---</span>');
+  for(var i=0;i<fieldCount;i++){
+    var fAccess=u2(), fName=u2(), fDesc=u2(), fAttrCount=u2();
+    lines.push('  <span class="tag tag-field">field</span> ' + decodeAccess(fAccess) + ' ' + cpUtf8(fDesc) + ' ' + cpUtf8(fName));
+    for(var a=0;a<fAttrCount;a++){ u2(); var al=u4(); readBytes(al); }
+  }
+  lines.push('');
+
+  // Methods
+  var methodCount = u2();
+  lines.push('<span class="diff-hdr">--- Methods (' + methodCount + ') ---</span>');
+  for(var i=0;i<methodCount;i++){
+    var mAccess=u2(), mName=u2(), mDesc=u2(), mAttrCount=u2();
+    lines.push('  <span class="tag tag-method">method</span> ' + decodeAccess(mAccess) + ' ' + cpUtf8(mName) + cpUtf8(mDesc));
+    for(var a=0;a<mAttrCount;a++){
+      var aName=u2(), aLen=u4();
+      var attrName = cpUtf8(aName);
+      if(attrName==="Code"){
+        var maxStack=u2(), maxLocals=u2(), codeLen=u4();
+        lines.push('    Code: maxStack='+maxStack+' maxLocals='+maxLocals+' bytes='+codeLen);
+        readBytes(codeLen);
+        var excCount=u2();
+        for(var e=0;e<excCount;e++){ u2();u2();u2();u2(); }
+        var caCount=u2();
+        for(var ca=0;ca<caCount;ca++){ u2(); var cal=u4(); readBytes(cal); }
+      } else {
+        readBytes(aLen);
+      }
+    }
+  }
+  lines.push('');
+
+  // Constant pool (collapsible)
+  lines.push('<span class="diff-hdr" style="cursor:pointer" onclick="var el=document.getElementById(\'cp-detail\');el.style.display=el.style.display===\'none\'?\'block\':\'none\'">--- Constant Pool (click to toggle) ---</span>');
+  lines.push('<span id="cp-detail" style="display:none">' + cpLines.join('\n') + '</span>');
+
+  return lines.join('\n');
+}
+
+function decodeAccess(f){
+  var flags=[];
+  if(f&0x0001) flags.push("public");
+  if(f&0x0002) flags.push("private");
+  if(f&0x0004) flags.push("protected");
+  if(f&0x0008) flags.push("static");
+  if(f&0x0010) flags.push("final");
+  if(f&0x0020) flags.push("super/synchronized");
+  if(f&0x0040) flags.push("volatile/bridge");
+  if(f&0x0080) flags.push("transient/varargs");
+  if(f&0x0100) flags.push("native");
+  if(f&0x0200) flags.push("interface");
+  if(f&0x0400) flags.push("abstract");
+  if(f&0x0800) flags.push("strictfp");
+  if(f&0x1000) flags.push("synthetic");
+  if(f&0x2000) flags.push("annotation");
+  if(f&0x4000) flags.push("enum");
+  return flags.join(" ");
+}
+
+function escHtml(s){ return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;"); }
+
+// --- Hex view ---
+function hexView(){
+  var path = document.getElementById("hex-select").value;
+  var maxLen = parseInt(document.getElementById("hex-len").value) || 1024;
+  var out = document.getElementById("hex-result");
+  document.getElementById("str-result").style.display = "none";
+  out.style.display = "block";
+  out.textContent = "Loading...";
+  fetchBin(path, function(arr, st){
+    if(!arr){ out.textContent="Failed: HTTP "+st; return; }
+    out.textContent = fmtHex(arr, maxLen);
+  });
+}
+
+// --- String extraction ---
+function strView(){
+  var path = document.getElementById("hex-select").value;
+  var out = document.getElementById("str-result");
+  document.getElementById("hex-result").style.display = "none";
+  out.style.display = "block";
+  out.textContent = "Loading...";
+  fetchBin(path, function(arr, st){
+    if(!arr){ out.textContent="Failed: HTTP "+st; return; }
+    var strs = extractStrings(arr, 4);
+    out.textContent = "Strings (min 4 chars) in " + path + ": " + strs.length + " found\n\n" + strs.join("\n");
+  });
+}
+
+// --- Manifest viewer ---
+function loadManifest(){
+  var disc = document.getElementById("mf-disc").value;
+  var out = document.getElementById("mf-result");
+  out.style.display = "block";
+  out.innerHTML = "Loading manifest...";
+  var mfPath = "disc-" + disc + "/jar/org/bdj/bluray.InitXlet.perm";
+  var permPath = mfPath;
+  // Load the perm file as a sample verification
+  fetchBin("disc-"+disc+"/jar/org/bdj/InitXlet.class", function(arr){
+    var lines = [];
+    lines.push('<span class="diff-hdr">=== Disc: ' + disc.toUpperCase() + ' ===</span>');
+    lines.push('');
+    // List key files with sizes
+    var files = [
+      {p:"jar/org/bdj/InitXlet.class", role:"Xlet entry point"},
+      {p:"jar/org/bdj/Boot.class", role:"Boot orchestrator"},
+      {p:"jar/org/bdj/Cfg.class", role:"Configuration"},
+      {p:"jar/org/bdj/Screen.class", role:"Display handler"},
+      {p:"jar/org/bdj/OfflineRenderer.class", role:"Offline command renderer"},
+      {p:"jar/org/bdj/LocalResultLedger.class", role:"Result tracker"},
+      {p:"jar/bonk/hen.bin", role:"Native payload"},
+      {p:"jar/bonk/local/guards.bin", role:"Guard conditions"},
+      {p:"jar/bonk/local/rules.bin", role:"Rule definitions"},
+      {p:"jar/bonk/local/schedule.bin", role:"Execution schedule"},
+      {p:"offline/Hx1400.class", role:"Main runtime stage (56KB)"},
+      {p:"offline/J196rR.class", role:"Support class"},
+      {p:"offline/AXZXkk.class", role:"Support class"},
+      {p:"offline/EkIKZR.class", role:"Support class"}
+    ];
+    var loaded = 0;
+    var total = files.length;
+    var results = [];
+    files.forEach(function(f, idx){
+      fetchBin("disc-"+disc+"/"+f.p, function(data){
+        if(data){
+          results[idx] = f.p.padEnd(48) + data.length.toString().padStart(8) + " B   " + f.role;
+        } else {
+          results[idx] = f.p.padEnd(48) + "     N/A      " + f.role;
+        }
+        loaded++;
+        if(loaded===total){
+          lines.push('File'.padEnd(48) + 'Size'.padStart(8) + '     Role');
+          lines.push('-'.repeat(90));
+          for(var i=0;i<results.length;i++) lines.push(results[i]);
+          out.innerHTML = lines.join('\n');
+        }
+      });
+    });
+  });
+}
+
+// --- Disc diff ---
+function runDiff(){
+  var out = document.getElementById("diff-result");
+  out.style.display = "block";
+  out.innerHTML = "Comparing discs...";
+  var pairs = [
+    "jar/org/bdj/InitXlet.class",
+    "jar/org/bdj/Boot.class",
+    "jar/org/bdj/Cfg.class",
+    "jar/org/bdj/Screen.class",
+    "jar/org/bdj/OfflineRenderer.class",
+    "jar/org/bdj/LocalResultLedger.class",
+    "jar/bonk/hen.bin",
+    "jar/bonk/local/guards.bin",
+    "jar/bonk/local/rules.bin",
+    "offline/Hx1400.class",
+    "offline/J196rR.class",
+    "offline/AXZXkk.class",
+    "offline/EkIKZR.class",
+    "NOTICE.txt"
+  ];
+  var lines = ['<span class="diff-hdr">=== GOLDHEN14C1 vs BONKHEN ===</span>', ''];
+  var done = 0;
+  pairs.forEach(function(rel){
+    var pa = "disc-goldhen14/" + rel;
+    var pb = "disc-bonkhen/" + rel;
+    fetchBin(pa, function(a){
+      fetchBin(pb, function(b){
+        var status;
+        if(!a && !b) status = "both missing";
+        else if(!a) status = "only in BONKHEN (" + b.length + " B)";
+        else if(!b) status = "only in GOLDHEN14 (" + a.length + " B)";
+        else if(a.length !== b.length) status = '<span class="diff-del">DIFFER</span> (size: ' + a.length + ' vs ' + b.length + ')';
+        else {
+          var same = true;
+          var diffBytes = 0;
+          for(var i=0;i<a.length;i++){ if(a[i]!==b[i]){ same=false; diffBytes++; } }
+          if(same) status = '<span class="diff-add">IDENTICAL</span> (' + a.length + ' B)';
+          else status = '<span class="diff-del">DIFFER</span> (' + diffBytes + ' bytes differ in ' + a.length + ' B file)';
+        }
+        lines.push(rel.padEnd(50) + ' ' + status);
+        done++;
+        if(done===pairs.length){
+          lines.sort();
+          out.innerHTML = lines.join('\n');
+        }
+      });
+    });
+  });
+}
+
+// --- Overview ---
+function runOverview(){
+  var container = document.getElementById("overview-result");
+  container.innerHTML = "Scanning...";
+  var discs = ["goldhen14","bonkhen"];
+  var html = '<div class="summary-grid">';
+  var scanned = 0;
+  discs.forEach(function(disc){
+    var keyFiles = [
+      "jar/org/bdj/InitXlet.class","jar/org/bdj/Boot.class","jar/org/bdj/Cfg.class",
+      "jar/org/bdj/Screen.class","jar/org/bdj/OfflineRenderer.class",
+      "jar/bonk/hen.bin","offline/Hx1400.class","offline/J196rR.class",
+      "offline/AXZXkk.class","offline/EkIKZR.class","NOTICE.txt"
+    ];
+    var totalSize = 0, fileCount = 0, loaded = 0;
+    keyFiles.forEach(function(f){
+      fetchBin("disc-"+disc+"/"+f, function(arr){
+        if(arr){ totalSize += arr.length; fileCount++; }
+        loaded++;
+        if(loaded===keyFiles.length){
+          html += '<div class="summary-card"><h3>'+(disc==="goldhen14"?"GOLDHEN14C1":"BONKHEN")+'</h3>';
+          html += '<div class="val">'+fileCount+' key files</div>';
+          html += '<div class="mono">Total: '+(totalSize/1024).toFixed(1)+' KB</div>';
+          html += '<div class="mono">hen.bin payload included</div>';
+          html += '</div>';
+          scanned++;
+          if(scanned===2){ html+='</div>'; container.innerHTML = html; }
+        }
+      });
+    });
+  });
+}
+</script>
+</body>
+</html>
