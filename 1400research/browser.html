@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>PS4 14.00 BD-J File Browser by Dids (@z.z6)</title>
+<link rel="stylesheet" href="../style.css">
+<style>
+.tree { text-align:left; display:inline-block; max-width:960px; width:100%; margin:0 auto; }
+.tree ul { list-style:none; padding-left:20px; }
+.tree li { margin:4px 0; }
+.folder { color:#daa520; cursor:pointer; font-size:16px; }
+.folder:hover { color:#ffd700; }
+.file-link { color:#9cd1ff; text-decoration:none; font-size:14px; font-family:monospace; }
+.file-link:hover { color:white; text-decoration:underline; }
+.size { color:#888; font-size:12px; margin-left:8px; }
+.badge { display:inline-block; padding:1px 6px; border-radius:3px; font-size:11px; margin-left:6px; }
+.badge-class { background:#4b0082; color:#ddd; }
+.badge-bin { background:#8b0000; color:#ddd; }
+.badge-perm { background:#006400; color:#ddd; }
+.badge-txt { background:#333; color:#aaa; }
+.disc-tab { display:inline-block; padding:8px 20px; margin:4px; cursor:pointer; border-radius:4px 4px 0 0; }
+.disc-tab.active { background:#003263; color:white; }
+.disc-tab.inactive { background:#1a1a2e; color:#888; }
+.disc-tab:hover { background:#0069d9; color:white; }
+.hex-view { background:#111; color:#0f0; font-family:monospace; font-size:12px; padding:12px; text-align:left; max-height:300px; overflow-y:auto; white-space:pre; margin:12px auto; max-width:700px; display:none; }
+</style>
+</head>
+<body>
+<h1 id="msgs">PS4 14.00 BD-J File Browser by Dids (@z.z6)</h1>
+<hr>
+<br>
+<div>
+<span class="disc-tab active" id="tab-goldhen14" onclick="showDisc('goldhen14')">GOLDHEN14C1</span>
+<span class="disc-tab inactive" id="tab-bonkhen" onclick="showDisc('bonkhen')">BONKHEN</span>
+</div>
+<br>
+
+<div id="disc-goldhen14" class="tree"></div>
+<div id="disc-bonkhen" class="tree" style="display:none"></div>
+
+<div id="hexbox" class="hex-view"></div>
+
+<br>
+<button class="btn" onmouseover="msgs.innerHTML='Return to 14.00 Research'" onmouseout="msgs.innerHTML='PS4 14.00 BD-J File Browser by Dids (@z.z6)'" onclick="location.href='index.html'"> Return to Research </button>
+<button class="btn" onmouseover="msgs.innerHTML='Return to Main Menu'" onmouseout="msgs.innerHTML='PS4 14.00 BD-J File Browser by Dids (@z.z6)'" onclick="location.href='../index.html'"> Main Menu </button>
+<br><br>
+<h1 style="font-size:14px;">BD-J Disc Structure Reference</h1>
+<pre style="color:#9cd1ff;text-align:left;display:inline-block;max-width:700px;font-size:12px;">
+UDF 2.50 Blu-ray ISO
+ BDMV/
+   BDJO/00000.bdjo    Entry point descriptor (launches org.bdj.InitXlet)
+   JAR/00000.jar      Java archive containing all classes + data
+   STREAM/00000.m2ts  Dummy video (required by BD spec)
+   AUXDATA/*.otf      Fonts
+   CLIPINF/*.clpi     Clip info
+   PLAYLIST/*.mpls    Playlist
+   MovieObject.bdmv   Movie object table
+   index.bdmv         Disc index
+ CERTIFICATE/
+   app.discroot.crt   Application signing cert
+   bu.discroot.crt    Binding unit cert
+   id.bdmv            Disc ID
+ x/offline/
+   Hx1400.class       Main stage class (loaded at runtime)
+   J196rR.class       Support class
+   AXZXkk.class       Support class
+   EkIKZR.class       Support class
+
+JAR contents (org.bdj.*):
+   InitXlet.class     Xlet entry point (implements javax.tv.xlet.Xlet)
+   Boot.class         Boot sequence orchestrator
+   Cfg.class          Configuration constants
+   Screen.class       On-screen display
+   OfflineRenderer    Offline command renderer + sub-classes
+   LocalResultLedger  Result tracking
+
+   bonk/hen.bin           Native payload (~550KB x86-64)
+   bonk/local/*.bin       Metadata (guards, rules, shapes, schedule, etc.)
+   bonk/local/templates/  Command templates (cmd-0002 through cmd-0046)
+</pre>
+
+<script>
+var GOLDHEN14 = {
+  "NOTICE.txt": {size:"499 B", type:"txt"},
+  "jar/": {
+    "org/bdj/": {
+      "InitXlet.class": {size:"10 KB", type:"class"},
+      "InitXlet$Attempt.class": {size:"1 KB", type:"class"},
+      "InitXlet$Lines.class": {size:"2 KB", type:"class"},
+      "Boot.class": {size:"5 KB", type:"class"},
+      "Boot$1.class": {size:"1 KB", type:"class"},
+      "Boot$L.class": {size:"1 KB", type:"class"},
+      "Cfg.class": {size:"1 KB", type:"class"},
+      "Screen.class": {size:"4 KB", type:"class"},
+      "Screen$1.class": {size:"1 KB", type:"class"},
+      "Screen$2.class": {size:"1 KB", type:"class"},
+      "OfflineRenderer.class": {size:"8 KB", type:"class"},
+      "OfflineRenderer$Frame.class": {size:"1 KB", type:"class"},
+      "OfflineRenderer$Guards.class": {size:"1 KB", type:"class"},
+      "OfflineRenderer$MarkerPlan.class": {size:"1 KB", type:"class"},
+      "OfflineRenderer$Rule.class": {size:"1 KB", type:"class"},
+      "OfflineRenderer$ScheduleEntry.class": {size:"1 KB", type:"class"},
+      "OfflineRenderer$Shape.class": {size:"1 KB", type:"class"},
+      "OfflineRenderer$TemplatePin.class": {size:"1 KB", type:"class"},
+      "OfflineRenderer$WriteSite.class": {size:"1 KB", type:"class"},
+      "LocalResultLedger.class": {size:"2 KB", type:"class"},
+      "bluray.InitXlet.perm": {size:"410 B", type:"perm"}
+    },
+    "bonk/": {
+      "hen.bin": {size:"549 KB", type:"bin"},
+      "local/": {
+        "guards.bin": {size:"small", type:"bin"},
+        "marker-sites.bin": {size:"small", type:"bin"},
+        "rules.bin": {size:"small", type:"bin"},
+        "schedule.bin": {size:"small", type:"bin"},
+        "shapes.bin": {size:"small", type:"bin"},
+        "template-hashes.bin": {size:"small", type:"bin"},
+        "write-sites.bin": {size:"small", type:"bin"},
+        "templates/": {
+          "cmd-0002.bin":{size:"small",type:"bin"},"cmd-0004.bin":{size:"small",type:"bin"},
+          "cmd-0005.bin":{size:"small",type:"bin"},"cmd-0006.bin":{size:"small",type:"bin"},
+          "cmd-0007.bin":{size:"small",type:"bin"},"cmd-0008.bin":{size:"small",type:"bin"},
+          "cmd-0009.bin":{size:"small",type:"bin"},"cmd-0010.bin":{size:"small",type:"bin"},
+          "cmd-0011.bin":{size:"small",type:"bin"},"cmd-0012.bin":{size:"small",type:"bin"},
+          "cmd-0014.bin":{size:"small",type:"bin"},"cmd-0015.bin":{size:"small",type:"bin"},
+          "cmd-0016.bin":{size:"small",type:"bin"},"cmd-0017.bin":{size:"small",type:"bin"},
+          "cmd-0018.bin":{size:"small",type:"bin"},"cmd-0019.bin":{size:"small",type:"bin"},
+          "cmd-0020.bin":{size:"small",type:"bin"},"cmd-0021.bin":{size:"small",type:"bin"},
+          "cmd-0022.bin":{size:"small",type:"bin"},"cmd-0024.bin":{size:"small",type:"bin"},
+          "cmd-0025.bin":{size:"small",type:"bin"},"cmd-0026.bin":{size:"small",type:"bin"},
+          "cmd-0027.bin":{size:"small",type:"bin"},"cmd-0028.bin":{size:"small",type:"bin"},
+          "cmd-0029.bin":{size:"small",type:"bin"},"cmd-0030.bin":{size:"small",type:"bin"},
+          "cmd-0031.bin":{size:"small",type:"bin"},"cmd-0032.bin":{size:"small",type:"bin"},
+          "cmd-0034.bin":{size:"small",type:"bin"},"cmd-0035.bin":{size:"small",type:"bin"},
+          "cmd-0036.bin":{size:"small",type:"bin"},"cmd-0037.bin":{size:"small",type:"bin"},
+          "cmd-0038.bin":{size:"small",type:"bin"},"cmd-0039.bin":{size:"small",type:"bin"},
+          "cmd-0040.bin":{size:"small",type:"bin"},"cmd-0041.bin":{size:"small",type:"bin"},
+          "cmd-0042.bin":{size:"small",type:"bin"},"cmd-0043.bin":{size:"small",type:"bin"},
+          "cmd-0044.bin":{size:"small",type:"bin"},"cmd-0046.bin":{size:"small",type:"bin"}
+        }
+      }
+    }
+  },
+  "offline/": {
+    "Hx1400.class": {size:"56 KB", type:"class"},
+    "J196rR.class": {size:"3 KB", type:"class"},
+    "AXZXkk.class": {size:"2 KB", type:"class"},
+    "EkIKZR.class": {size:"1 KB", type:"class"}
+  }
+};
+
+var BONKHEN = JSON.parse(JSON.stringify(GOLDHEN14));
+
+function badge(type){
+  var map = {"class":"badge-class","bin":"badge-bin","perm":"badge-perm","txt":"badge-txt"};
+  return '<span class="badge '+(map[type]||"badge-txt")+'">'+type+'</span>';
+}
+
+function renderTree(obj, basePath, disc){
+  var html = "<ul>";
+  var keys = Object.keys(obj).sort(function(a,b){
+    var aDir = a.endsWith("/"), bDir = b.endsWith("/");
+    if(aDir && !bDir) return -1;
+    if(!aDir && bDir) return 1;
+    return a.localeCompare(b);
+  });
+  for(var i=0;i<keys.length;i++){
+    var k = keys[i];
+    var v = obj[k];
+    if(k.endsWith("/")){
+      var id = (disc+"-"+basePath+k).replace(/[^a-zA-Z0-9]/g,"_");
+      html += '<li><span class="folder" onclick="toggle(\''+id+'\')">[+] '+k+'</span>';
+      html += '<span id="'+id+'" style="display:none">'+renderTree(v, basePath+k, disc)+'</span></li>';
+    } else {
+      var href = "disc-"+(disc==="goldhen14"?"goldhen14":"bonkhen")+"/"+basePath+k;
+      html += '<li>';
+      html += '<a class="file-link" href="'+href+'" target="_blank" onclick="hexPreview(event,\''+href+'\')">'+k+'</a>';
+      html += '<span class="size">'+v.size+'</span>';
+      html += badge(v.type);
+      html += '</li>';
+    }
+  }
+  html += "</ul>";
+  return html;
+}
+
+function toggle(id){
+  var el = document.getElementById(id);
+  if(el.style.display==="none"){
+    el.style.display="block";
+    el.previousElementSibling.textContent = el.previousElementSibling.textContent.replace("[+]","[-]");
+  } else {
+    el.style.display="none";
+    el.previousElementSibling.textContent = el.previousElementSibling.textContent.replace("[-]","[+]");
+  }
+}
+
+function showDisc(which){
+  document.getElementById("disc-goldhen14").style.display = which==="goldhen14"?"block":"none";
+  document.getElementById("disc-bonkhen").style.display = which==="bonkhen"?"block":"none";
+  document.getElementById("tab-goldhen14").className = "disc-tab "+(which==="goldhen14"?"active":"inactive");
+  document.getElementById("tab-bonkhen").className = "disc-tab "+(which==="bonkhen"?"active":"inactive");
+}
+
+function hexPreview(e, path){
+  if(path.endsWith(".class") || path.endsWith(".bin")){
+    e.preventDefault();
+    var box = document.getElementById("hexbox");
+    box.style.display = "block";
+    box.textContent = "Loading " + path + " ...";
+    var xhr = new XMLHttpRequest();
+    xhr.responseType = "arraybuffer";
+    xhr.open("GET", path);
+    xhr.onload = function(){
+      if(xhr.status===200){
+        var arr = new Uint8Array(xhr.response);
+        var lines = [];
+        var len = Math.min(arr.length, 512);
+        lines.push("File: " + path + "  (" + arr.length + " bytes, showing first " + len + ")");
+        lines.push("");
+        for(var off=0; off<len; off+=16){
+          var hex = "", ascii = "";
+          for(var j=0;j<16;j++){
+            if(off+j<len){
+              var b = arr[off+j];
+              hex += (b<16?"0":"") + b.toString(16) + " ";
+              ascii += (b>=32 && b<127) ? String.fromCharCode(b) : ".";
+            } else {
+              hex += "   ";
+            }
+          }
+          var addr = off.toString(16);
+          while(addr.length<8) addr = "0"+addr;
+          lines.push(addr + "  " + hex + " |" + ascii + "|");
+        }
+        box.textContent = lines.join("\n");
+      } else {
+        box.textContent = "Failed to load: HTTP " + xhr.status;
+      }
+    };
+    xhr.onerror = function(){ box.textContent = "Network error loading " + path; };
+    xhr.send();
+  }
+}
+
+document.getElementById("disc-goldhen14").innerHTML = "<h1 style='font-size:16px;color:#daa520'>GOLDHEN14C1 — GoldHEN 14.00 Experimental Candidate v2</h1>" + renderTree(GOLDHEN14, "", "goldhen14");
+document.getElementById("disc-bonkhen").innerHTML = "<h1 style='font-size:16px;color:#daa520'>BONKHEN — Bonk HEN 14.00 Local Review Candidate</h1>" + renderTree(BONKHEN, "", "bonkhen");
+</script>
+</body>
+</html>

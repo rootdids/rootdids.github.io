@@ -1,0 +1,4 @@
+Experimental GoldHEN 14.00 disc candidate v2. Command7 echo and command8 marker-header reads use the live scan result.
+The original exploit and command checks are retained. The normal HEN payload is replaced by the custom GoldHEN startup image.
+This is not an official SiSTRo 14.00 release. Improved success rate and fresh-boot startup have not been measured on hardware.
+One attempt per application run remains enforced. If a kernel-stage attempt fails, fully shut down before another attempt.
