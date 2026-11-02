@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>PS4 14.00 FW WebKit Research by Dids (@z.z6)</title>
+<link rel="stylesheet" href="../style.css">
+<script src="webkit.js"></script>
+</head>
+<body onload="setTimeout(probe, 50);">
+<h1 id="msgs">PS4 14.00 FW WebKit Research by Dids (@z.z6)</h1>
+<hr>
+<br>
+<div id="menu">
+<h1 style="font-size: 18px;color: yellow;">Research Status</h1>
+<h1 id="status" style="font-size: 20px;margin-top: 32px;">Probing WebKit... Please Wait</h1>
+<pre id="ua" style="color:#9cd1ff;text-align:left;display:inline-block;max-width:900px;white-space:pre-wrap;word-break:break-all;margin-top: 16px;"></pre>
+<br>
+<h1 style="font-size: 18px;color: yellow;margin-top: 32px;">About</h1>
+<h1 style="font-size: 16px;max-width: 900px;margin-left:auto;margin-right:auto;">
+This is an experimental research entry for PlayStation 4 firmware 14.00. No public WebKit exploit is bundled here; this page only collects browser-side information (UserAgent, JavaScriptCore signatures, structure IDs) used to study the browser build. No payload is sent to the console.
+</h1>
+<br>
+<button class="btn" onmouseover="msgs.innerHTML='Save the collected WebKit probe output to a text file'" onmouseout="msgs.innerHTML='PS4 14.00 FW WebKit Research by Dids (@z.z6)'" onclick="save_probe()"> Save Probe Report </button>
+<button class="btn" onmouseover="msgs.innerHTML='Return to the main host menu'" onmouseout="msgs.innerHTML='PS4 14.00 FW WebKit Research by Dids (@z.z6)'" onclick="location.replace('../index.html')"> Return </button>
+<h1 style="margin-top: 48px;">Research by:<a href="https://discord.gg/rawmoddersgroup" style="color: #f31414;margin-left: 10px;margin-right: 10px;">Dids (@z.z6)</a>Special thanks to the scene devs.</h1>
+</div>
+<script>
+function save_probe(){
+  var blob = new Blob([document.getElementById("ua").textContent], {type: "text/plain"});
+  var a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "ps4_1400_webkit_probe.txt";
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+}
+</script>
+</body>
+</html>
