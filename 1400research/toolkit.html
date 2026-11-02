@@ -32,8 +32,8 @@ body { overflow-y: auto; }
 .tag-field { background:#555; color:#ddd; }
 .tag-nat { background:#2e4a1e; color:#ddd; }
 .tag-ref { background:#1a3a5c; color:#ddd; }
-.summary-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin:8px 0; }
-.summary-card { background:#111; border:1px solid #333; border-radius:4px; padding:10px; }
+.summary-grid { margin:8px 0; text-align:center; }
+.summary-card { background:#111; border:1px solid #333; border-radius:4px; padding:10px; display:inline-block; width:45%; margin:4px; vertical-align:top; text-align:left; }
 .summary-card h3 { color:#daa520; font-size:13px; margin:0 0 4px 0; text-shadow:none; }
 .summary-card .val { color:#9cd1ff; font-size:20px; font-family:monospace; }
 </style>
@@ -166,6 +166,11 @@ body { overflow-y: auto; }
 <button class="btn" onmouseover="msgs.innerHTML='Back to main menu'" onmouseout="msgs.innerHTML='PS4 14.00 BD-J Analysis Toolkit by Dids (@z.z6)'" onclick="location.href='../index.html'"> Main Menu </button>
 
 <script>
+// --- PS4 browser polyfills (ES5 compat) ---
+function padEnd(s, n, c){ s=String(s); c=c||" "; while(s.length<n) s+=c; return s; }
+function padStart(s, n, c){ s=String(s); c=c||" "; while(s.length<n) s=c+s; return s; }
+function strRepeat(s, n){ var r=""; for(var i=0;i<n;i++) r+=s; return r; }
+
 // --- Tab switching ---
 function showTool(name){
   var tools = ["class","hex","manifest","diff","overview"];
@@ -431,22 +436,24 @@ function loadManifest(){
     var loaded = 0;
     var total = files.length;
     var results = [];
-    files.forEach(function(f, idx){
-      fetchBin("disc-"+disc+"/"+f.p, function(data){
-        if(data){
-          results[idx] = f.p.padEnd(48) + data.length.toString().padStart(8) + " B   " + f.role;
-        } else {
-          results[idx] = f.p.padEnd(48) + "     N/A      " + f.role;
-        }
-        loaded++;
-        if(loaded===total){
-          lines.push('File'.padEnd(48) + 'Size'.padStart(8) + '     Role');
-          lines.push('-'.repeat(90));
-          for(var i=0;i<results.length;i++) lines.push(results[i]);
-          out.innerHTML = lines.join('\n');
-        }
-      });
-    });
+    for(var fi=0; fi<files.length; fi++){
+      (function(f, idx){
+        fetchBin("disc-"+disc+"/"+f.p, function(data){
+          if(data){
+            results[idx] = padEnd(f.p,48) + padStart(data.length.toString(),8) + " B   " + f.role;
+          } else {
+            results[idx] = padEnd(f.p,48) + "     N/A      " + f.role;
+          }
+          loaded++;
+          if(loaded===total){
+            lines.push(padEnd('File',48) + padStart('Size',8) + '     Role');
+            lines.push(strRepeat('-',90));
+            for(var r=0;r<results.length;r++) lines.push(results[r]);
+            out.innerHTML = lines.join('\n');
+          }
+        });
+      })(files[fi], fi);
+    }
   });
 }
 
@@ -473,32 +480,34 @@ function runDiff(){
   ];
   var lines = ['<span class="diff-hdr">=== GOLDHEN14C1 vs BONKHEN ===</span>', ''];
   var done = 0;
-  pairs.forEach(function(rel){
-    var pa = "disc-goldhen14/" + rel;
-    var pb = "disc-bonkhen/" + rel;
-    fetchBin(pa, function(a){
-      fetchBin(pb, function(b){
-        var status;
-        if(!a && !b) status = "both missing";
-        else if(!a) status = "only in BONKHEN (" + b.length + " B)";
-        else if(!b) status = "only in GOLDHEN14 (" + a.length + " B)";
-        else if(a.length !== b.length) status = '<span class="diff-del">DIFFER</span> (size: ' + a.length + ' vs ' + b.length + ')';
-        else {
-          var same = true;
-          var diffBytes = 0;
-          for(var i=0;i<a.length;i++){ if(a[i]!==b[i]){ same=false; diffBytes++; } }
-          if(same) status = '<span class="diff-add">IDENTICAL</span> (' + a.length + ' B)';
-          else status = '<span class="diff-del">DIFFER</span> (' + diffBytes + ' bytes differ in ' + a.length + ' B file)';
-        }
-        lines.push(rel.padEnd(50) + ' ' + status);
-        done++;
-        if(done===pairs.length){
-          lines.sort();
-          out.innerHTML = lines.join('\n');
-        }
+  for(var pi=0; pi<pairs.length; pi++){
+    (function(rel){
+      var pa = "disc-goldhen14/" + rel;
+      var pb = "disc-bonkhen/" + rel;
+      fetchBin(pa, function(a){
+        fetchBin(pb, function(b){
+          var status;
+          if(!a && !b) status = "both missing";
+          else if(!a) status = "only in BONKHEN (" + b.length + " B)";
+          else if(!b) status = "only in GOLDHEN14 (" + a.length + " B)";
+          else if(a.length !== b.length) status = '<span class="diff-del">DIFFER</span> (size: ' + a.length + ' vs ' + b.length + ')';
+          else {
+            var same = true;
+            var diffBytes = 0;
+            for(var i=0;i<a.length;i++){ if(a[i]!==b[i]){ same=false; diffBytes++; } }
+            if(same) status = '<span class="diff-add">IDENTICAL</span> (' + a.length + ' B)';
+            else status = '<span class="diff-del">DIFFER</span> (' + diffBytes + ' bytes differ in ' + a.length + ' B file)';
+          }
+          lines.push(padEnd(rel,50) + ' ' + status);
+          done++;
+          if(done===pairs.length){
+            lines.sort();
+            out.innerHTML = lines.join('\n');
+          }
+        });
       });
-    });
-  });
+    })(pairs[pi]);
+  }
 }
 
 // --- Overview ---
@@ -508,30 +517,34 @@ function runOverview(){
   var discs = ["goldhen14","bonkhen"];
   var html = '<div class="summary-grid">';
   var scanned = 0;
-  discs.forEach(function(disc){
-    var keyFiles = [
-      "jar/org/bdj/InitXlet.class","jar/org/bdj/Boot.class","jar/org/bdj/Cfg.class",
-      "jar/org/bdj/Screen.class","jar/org/bdj/OfflineRenderer.class",
-      "jar/bonk/hen.bin","offline/Hx1400.class","offline/J196rR.class",
-      "offline/AXZXkk.class","offline/EkIKZR.class","NOTICE.txt"
-    ];
-    var totalSize = 0, fileCount = 0, loaded = 0;
-    keyFiles.forEach(function(f){
-      fetchBin("disc-"+disc+"/"+f, function(arr){
-        if(arr){ totalSize += arr.length; fileCount++; }
-        loaded++;
-        if(loaded===keyFiles.length){
-          html += '<div class="summary-card"><h3>'+(disc==="goldhen14"?"GOLDHEN14C1":"BONKHEN")+'</h3>';
-          html += '<div class="val">'+fileCount+' key files</div>';
-          html += '<div class="mono">Total: '+(totalSize/1024).toFixed(1)+' KB</div>';
-          html += '<div class="mono">hen.bin payload included</div>';
-          html += '</div>';
-          scanned++;
-          if(scanned===2){ html+='</div>'; container.innerHTML = html; }
-        }
-      });
-    });
-  });
+  for(var di=0; di<discs.length; di++){
+    (function(disc){
+      var keyFiles = [
+        "jar/org/bdj/InitXlet.class","jar/org/bdj/Boot.class","jar/org/bdj/Cfg.class",
+        "jar/org/bdj/Screen.class","jar/org/bdj/OfflineRenderer.class",
+        "jar/bonk/hen.bin","offline/Hx1400.class","offline/J196rR.class",
+        "offline/AXZXkk.class","offline/EkIKZR.class","NOTICE.txt"
+      ];
+      var totalSize = 0, fileCount = 0, loaded = 0;
+      for(var ki=0; ki<keyFiles.length; ki++){
+        (function(f){
+          fetchBin("disc-"+disc+"/"+f, function(arr){
+            if(arr){ totalSize += arr.length; fileCount++; }
+            loaded++;
+            if(loaded===keyFiles.length){
+              html += '<div class="summary-card"><h3>'+(disc==="goldhen14"?"GOLDHEN14C1":"BONKHEN")+'</h3>';
+              html += '<div class="val">'+fileCount+' key files</div>';
+              html += '<div class="mono">Total: '+(totalSize/1024).toFixed(1)+' KB</div>';
+              html += '<div class="mono">hen.bin payload included</div>';
+              html += '</div>';
+              scanned++;
+              if(scanned===2){ html+='</div>'; container.innerHTML = html; }
+            }
+          });
+        })(keyFiles[ki]);
+      }
+    })(discs[di]);
+  }
 }
 </script>
 </body>

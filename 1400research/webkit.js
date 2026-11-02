@@ -10,7 +10,8 @@ function hex(n){
 }
 
 function line(k, v){
-    return k.padEnd(28, " ") + " : " + v;
+    while(k.length < 28) k += " ";
+    return k + " : " + v;
 }
 
 function probe(){
@@ -71,18 +72,21 @@ function probe(){
     // Rough JIT-tier heuristic (timing only, no gadget search)
     out.push("--- JIT Warm-up Timing ---");
     try {
+        var now = (typeof performance !== "undefined" && performance.now)
+            ? function(){ return performance.now(); }
+            : function(){ return new Date().getTime(); };
         function hot(n){
             var s = 0;
             for (var i = 0; i < n; i++) s = (s + i*3) | 0;
             return s;
         }
-        var t0 = performance.now();
+        var t0 = now();
         hot(100);
-        var t1 = performance.now();
+        var t1 = now();
         for (var k = 0; k < 2000; k++) hot(1000);
-        var t2 = performance.now();
+        var t2 = now();
         hot(100);
-        var t3 = performance.now();
+        var t3 = now();
         out.push(line("cold 100 iters (ms)", (t1 - t0).toFixed(3)));
         out.push(line("warm 100 iters (ms)", (t3 - t2).toFixed(3)));
     } catch(ex){
