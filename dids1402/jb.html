@@ -1,0 +1,50 @@
+<!doctype html>
+<html class="run" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Dids 14.02 Webhost</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <!-- Reaching this page requires a key passed through sessionStorage from
+         the landing page.  Without it, nothing is decrypted and nothing
+         runs; the user is bounced back to index.html. -->
+    <div id="brand"><b>Dids 14.02 Webhost</b></div>
+    <div id="ramBox">RAM: checking...</div>
+    <div id="spin"></div>
+    <div id="msg">Restart your console</div>
+    <div id="wrap">
+      <div id="state"></div>
+      <div id="out"></div>
+    </div>
+    <p class="byline">by Dids (@z.z6_)</p>
+
+    <script src="boot.js"></script>
+    <script>
+      (function () {
+        var key = null;
+        try { key = sessionStorage.getItem("dids1402.k"); } catch (e) {}
+        /* The key lives for one run.  A browser-restored page restarts fresh
+           from the landing page, which is also what the bundle's own
+           referrer guard requires. */
+        try { sessionStorage.removeItem("dids1402.k"); } catch (e) {}
+        if (!key) {
+          location.replace("index.html");
+          return;
+        }
+        var state = document.getElementById("state");
+        var out   = document.getElementById("out");
+        function fail(msg) {
+          document.body.className = "fail";
+          document.getElementById("msg").textContent = msg;
+        }
+        window.dids1402.unlock(key).catch(function (err) {
+          /* AES-GCM auth failure (wrong key) and fetch errors both land
+             here.  The usual case is the former; we don't leak which. */
+          fail("incorrect key - reopen browser and try again");
+        });
+      })();
+    </script>
+  </body>
+</html>

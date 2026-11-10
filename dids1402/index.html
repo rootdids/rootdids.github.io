@@ -1,0 +1,51 @@
+<!doctype html>
+<html class="landing" lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Dids 14.02 Webhost</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <!-- The exploit code is encrypted at rest under enc/. The key below
+         decrypts and runs it in-browser; without the key the files on disk
+         are ciphertext and do nothing. The referrer guard in the bundle
+         still applies: arming the run requires navigation from this page. -->
+    <div id="brand"><b>Dids 14.02 Webhost</b></div>
+
+    <div class="shell">
+      <main class="panel">
+        <p class="lede">PS4 kernel exploit &middot; firmware 14.02</p>
+
+        <form class="pick" id="pick">
+          <label class="opt key">
+            <span class="opt-label">access key</span>
+            <input id="pw" type="password" autocomplete="off"
+                   spellcheck="false" placeholder="32-character key"
+                   maxlength="64" />
+          </label>
+
+          <label class="opt">
+            <input type="radio" name="payload" value="hen" />
+            <span>ps4-hen</span>
+          </label>
+          <label class="opt">
+            <input type="radio" name="payload" value="goldhen" checked />
+            <span>GoldHEN</span>
+          </label>
+
+          <label class="opt opt-auto">
+            <input type="checkbox" id="auto" checked />
+            <span>autostart</span>
+          </label>
+
+          <button class="btn" type="submit">start</button>
+          <p class="count" id="count"></p>
+        </form>
+      </main>
+    </div>
+
+    <p class="byline">by Dids (@z.z6_)</p>
+    <script src="launch.js"></script>
+  </body>
+</html>
