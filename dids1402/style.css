@@ -352,3 +352,16 @@ body.log #out {
 code {
   color: #c4a3ff;
 }
+
+/* --- credits footer (shared by raw13 and dids1402) --------------------- */
+
+.credits {
+  position: fixed;
+  bottom: 9px;
+  right: 14px;
+  z-index: 9;
+  margin: 0;
+  color: var(--faint);
+  font: 11px/1 var(--mono);
+  letter-spacing: 0.08em;
+}

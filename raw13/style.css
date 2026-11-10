@@ -1,23 +1,26 @@
-/* afterglow -- shared styling for the landing page and the run page.
-
-   The page kind sits on <html> (.landing / .run), never on <body>: jb.js owns
-   the body classes .log, .done and .fail and replaces them wholesale, so a
-   page-kind class on <body> would not survive the first state change. */
+/* Dids 14.02 Webhost -- shared styling for the landing page and the run page.
+ *
+ * Purple/black per Dids's house style.  The page kind sits on <html>
+ * (.landing / .run), never on <body>: the bundle owns the body classes
+ * .log, .done and .fail and replaces them wholesale, so a page-kind class
+ * on <body> would not survive the first state change. */
 
 :root {
-  --bg: #0b0d10;
-  --panel: #0e1116;
-  --sunk: #11151b;
-  --line: #1e2732;
+  --bg:      #0a0710;
+  --panel:   #140e1e;
+  --sunk:    #0f0919;
+  --line:    #2a1e42;
 
-  --fg: #c8ced8;
-  --bright: #e6ebf2;
-  --dim: #7c8798;
-  --faint: #4d5765;
+  --fg:      #d4c8e6;
+  --bright:  #ede4ff;
+  --dim:     #8574a3;
+  --faint:   #4a3d6b;
 
-  --ok: #7fd0a0;
-  --bad: #d08a7f;
-  --warn: #d8c07f;
+  --purple:  #a45dff;   /* primary accent */
+  --purple-dim: #6a3dba;
+  --ok:      #a45dff;   /* bundle uses --ok for success tint; keep it purple */
+  --bad:     #ff6b8a;
+  --warn:    #ffc98a;
 
   --sans: "Segoe UI", system-ui, sans-serif;
   --mono: Consolas, "DejaVu Sans Mono", monospace;
@@ -40,7 +43,7 @@ body {
 /* --- the bar at the top of both pages ----------------------------------- */
 
 #brand {
-  padding: 8px 10px;
+  padding: 10px 10px;
   border-bottom: 1px solid var(--line);
   background: var(--panel);
   text-align: center;
@@ -50,7 +53,8 @@ body {
   color: var(--bright);
   font-size: 15px;
   font-weight: 700;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
   vertical-align: middle;
 }
 
@@ -73,25 +77,19 @@ body {
   justify-content: center;
   flex-wrap: wrap;
   gap: 34px;
-  min-height: calc(100vh - 38px);
-  padding: 28px 20px 46px;
-}
-
-.meme {
-  width: 260px;
-  max-width: 44vw;
-  height: auto;
+  min-height: calc(100vh - 40px);
+  padding: 32px 20px 56px;
 }
 
 .panel {
-  width: 300px;
+  width: 320px;
 }
 
 .lede {
   margin: 0 0 1.6em;
   color: var(--dim);
-  font-size: 13px;
-  letter-spacing: 0.04em;
+  font: 13px/1.4 var(--sans);
+  letter-spacing: 0.05em;
 }
 
 .pick {
@@ -106,15 +104,17 @@ body {
   border-radius: 5px;
   background: var(--panel);
   cursor: pointer;
+  transition: border-color 0.15s;
 }
 
 .opt:hover {
-  border-color: #2b3a4c;
+  border-color: var(--purple-dim);
 }
 
 .opt input {
   margin: 0 9px 0 0;
   vertical-align: middle;
+  accent-color: var(--purple);
 }
 
 .opt span {
@@ -131,38 +131,86 @@ body {
   font-size: 14px;
 }
 
+/* --- key input (unique to 14.02) ---------------------------------------- */
+
+.opt.key {
+  display: flex;
+  flex-direction: column;
+  padding: 10px 13px 12px;
+  margin-bottom: 14px;
+  cursor: text;
+}
+
+.opt.key .opt-label {
+  margin: 0 0 6px;
+  color: var(--dim);
+  font: 11px/1 var(--mono);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.opt.key input {
+  width: 100%;
+  margin: 0;
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--sunk);
+  color: var(--bright);
+  font: 13px/1.1 var(--mono);
+  letter-spacing: 0.05em;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.opt.key input:focus {
+  border-color: var(--purple);
+}
+
+.opt.key input::placeholder {
+  color: var(--faint);
+  letter-spacing: 0.1em;
+}
+
+/* --- the start button --------------------------------------------------- */
+
 .btn {
   display: block;
   width: 100%;
   margin-top: 16px;
-  padding: 0.8em 1.4em;
-  border: 1px solid #2f4a3c;
+  padding: 0.85em 1.4em;
+  border: 1px solid var(--purple-dim);
   border-radius: 5px;
-  background: #16231d;
-  color: var(--ok);
+  background: linear-gradient(180deg, #1a1028 0%, #150c20 100%);
+  color: var(--purple);
   font: 700 15px/1 var(--sans);
-  letter-spacing: 0.1em;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
   cursor: pointer;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
 }
 
 .btn:hover,
 .btn:focus {
-  border-color: var(--ok);
+  border-color: var(--purple);
+  color: var(--bright);
+  background: linear-gradient(180deg, #1f1333 0%, #18102a 100%);
   outline: none;
 }
 
 .count {
   margin: 12px 0 0;
   min-height: 1.2em;
-  color: var(--ok);
+  color: var(--purple);
   font: 12px/1.2 var(--mono);
-  letter-spacing: 0.05em;
+  letter-spacing: 0.06em;
+  text-align: center;
 }
 
 /* --- run page ----------------------------------------------------------- */
 
-/* Running: a spinner under the bar. jb.js switches the body to .done, .fail
-   or .log. */
+/* Running: a spinner under the bar. The bundle switches the body to
+   .done, .fail or .log. */
 #spin {
   position: fixed;
   top: calc(50% + 20px);
@@ -171,7 +219,7 @@ body {
   height: 46px;
   margin: -23px 0 0 -23px;
   border: 4px solid var(--line);
-  border-top-color: var(--ok);
+  border-top-color: var(--purple);
   border-radius: 50%;
   animation: spin 0.9s linear infinite;
 }
@@ -192,6 +240,7 @@ body {
   text-align: center;
   font-size: 16px;
   letter-spacing: 0.5px;
+  color: var(--fg);
 }
 
 #wrap {
@@ -210,18 +259,17 @@ body.fail #spin {
 
 body.fail #msg {
   display: block;
+  color: var(--bad);
 }
 
 body.done #msg {
   display: block;
-  color: var(--ok);
+  color: var(--purple);
   font-weight: 700;
   letter-spacing: 2px;
 }
 
-/* ?log=1 -- the full step log. The column is laid out with flex rather than
-   by subtracting the header height from 100vh: the log then keeps filling
-   the page whatever the strip above it ends up being. */
+/* ?log=1 -- the full step log. */
 body.log {
   display: flex;
   flex-direction: column;
@@ -246,6 +294,8 @@ body.log #state {
   margin: 0 0 8px;
   font-size: 22px;
   font-weight: 700;
+  color: var(--bright);
+  letter-spacing: 0.04em;
 }
 
 body.log #out {
@@ -257,36 +307,38 @@ body.log #out {
   border: 1px solid var(--line);
   border-radius: 5px;
   background: var(--sunk);
+  color: var(--fg);
   font: 12px/1.45 var(--mono);
   white-space: pre-wrap;
 }
 
-/* The live heap readout sits in the flow under the bar. Nothing on this page
-   scrolls the document itself -- the log has its own scroll box -- so it
-   stays in view without being positioned over the wordmark. */
+/* The live heap readout sits in the flow under the bar. */
 #ramBox {
   overflow: hidden;
-  padding: 5px 10px;
+  padding: 6px 10px;
   border-bottom: 1px solid var(--line);
   background: var(--sunk);
-  color: var(--ok);
+  color: var(--purple);
   font: 11px/1.4 var(--mono);
+  letter-spacing: 0.04em;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-/* The retry notice, raised by jb.js when the chain throws or stalls. */
+/* The retry notice, raised by the bundle when the chain throws or stalls. */
 .notice {
   margin: 1em 0;
-  padding: 0.7em 1em;
-  border: 2px solid #e66;
-  background: #2a1414;
-  color: #f99;
-  font: 700 20px/1.4 var(--sans);
+  padding: 0.8em 1em;
+  border: 2px solid var(--bad);
+  background: #26121a;
+  color: var(--bad);
+  font: 700 18px/1.4 var(--sans);
+  letter-spacing: 0.03em;
 }
 
+/* Status colour utilities used by the bundle inside the log. */
 .ok {
-  color: var(--ok);
+  color: var(--purple);
 }
 
 .bad {
@@ -298,5 +350,18 @@ body.log #out {
 }
 
 code {
-  color: #9fb3d0;
+  color: #c4a3ff;
+}
+
+/* --- credits footer (shared by raw13 and dids1402) --------------------- */
+
+.credits {
+  position: fixed;
+  bottom: 9px;
+  right: 14px;
+  z-index: 9;
+  margin: 0;
+  color: var(--faint);
+  font: 11px/1 var(--mono);
+  letter-spacing: 0.08em;
 }
