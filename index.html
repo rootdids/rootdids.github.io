@@ -1,50 +1,159 @@
 ﻿<!DOCTYPE html>
-<html><head>
-<title>PS4  Exploit Host by Dids (@z.z6)</title>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PS4 Exploit Host — Dids (z.z6_)</title>
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
-<script>
-var histlength=history.length;history.go(-histlength 2);
-</script>
-<h1 id=msgs aria-live="polite">PS4  Exploit Host by Dids (@z.z6)</h1>
-<hr>
-<br>
-<div id=menu>
-<h1 style="font-size: 18px;color: yellow;">Select Your Firmware</h1>
-<button class="btn btn-multi" onmouseover="msgs.innerHTML='PS4 GoldHEN Host for 5.05 and 7.00 to 13.52 FW - (Auto Exploit Selection)'" onmouseout="msgs.innerHTML='PS4  Exploit Host by Dids (@z.z6_)'" onclick="location.replace('g2all/index.html')"> GoldHEN Multi FW </button>
-<button class="btn" onmouseover="msgs.innerHTML='PS4 5.05 FW Host v2.5'" onmouseout="msgs.innerHTML='PS4  Exploit Host by Dids (@z.z6)'" onclick="location.replace('505/index.html')"> 5.05 FW v2.5 </button>
-<a href="672goldhen/index.html"><button class="btn" onmouseover="msgs.innerHTML='PS4 6.72 FW GoldHEN Host'" onmouseout="msgs.innerHTML='PS4  Exploit Host by Dids (@z.z6_)'"> 6.72 FW GoldHEN </button></a>
-<a href="672/index.html"><button class="btn" onmouseover="msgs.innerHTML='PS4 6.72 FW Host v3.0'" onmouseout="msgs.innerHTML='PS4  Exploit Host by Dids (@z.z6)'"> 6.72 FW v3.0 </button></a>
-<br>
-<a href="900goldhen/index.html"><button class="btn" onmouseover="msgs.innerHTML='PS4 9.00 FW GoldHEN Host - (FontFaceSet Webkit)'" onmouseout="msgs.innerHTML='PS4  Exploit Host by Dids (@z.z6_)'"> 9.00 FW GoldHEN </button></a>
-<a href="900v3/index.html"><button class="btn" onmouseover="msgs.innerHTML='PS4 9.00 FW Host v3.0 - (FontFaceSet Webkit)'" onmouseout="msgs.innerHTML='PS4  Exploit Host by Dids (@z.z6_)'"> 9.00 FW v3.0 </button></a>
-<br>
-<a href="dids1400/index.html"><button class="btn" onmouseover="msgs.innerHTML='PS4 14.00 FW Host'" onmouseout="msgs.innerHTML='PS4  Exploit Host by Dids (@z.z6)'"> 14.00 FW </button></a>
-<a href="dids1402/index.html"><button class="btn btn-1400" onmouseover="msgs.innerHTML='PS4 14.02 FW Host - Key-gated, encrypted at rest'" onmouseout="msgs.innerHTML='PS4  Exploit Host by Dids (@z.z6)'"> 14.02 FW </button></a>
-<br>
-<button class="btn btn-onln" onmouseover="msgs.innerHTML='Restore a Host to User&#8217;s Guide without using DNS'" onmouseout="msgs.innerHTML='PS4  Exploit Host by Dids (@z.z6)'" onclick="location.replace('restore/index.html')"> Restore Host </button>
-<br>
-<button class="btn btn-onln" onmouseover="msgs.innerHTML='If you like my work you can support me with a donation.'" onmouseout="msgs.innerHTML='PS4  Exploit Host by Dids (@z.z6)'" onclick="donations()" style="margin-top: 137px;margin-bottom: 77px;width: 468px;"> For Donations (Only in Cryptocurrencies) </button>
-<h1 style="margin-top: 78px;">Edited by:<a href="https://discord.gg/rawmoddersgroup" style="color: #f31414;margin-left: 10px;margin-right: 10px;">Dids (@z.z6)</a>A special thanks to all the devs on the scene.</h1>
-</div>
-<div id=crypto>
-<h1 style="font-size: 18px;color: yellow;">Donate with Bitcoin (BTC):</h1>
-<img src="btc.jpg" width="150" height="150">
-<br>
-<h1 style="font-size: 18px;">3ASQBax9BwD4jDp2HpgeZEHg53PMvEMDXd</h1>
-<button class="btn" onclick="load_menu()"> Return </button>
-</div>
-<script>
-function donations(){
-document.getElementById("crypto").style.display = "block";
-document.getElementById("menu").style.display = "none";
-}
 
-function load_menu(){
-document.getElementById("menu").style.display = "block";
-document.getElementById("crypto").style.display = "none";
-}
+<header class="bar">
+  <div class="brand">
+    <span class="brand-mark">[ps4]</span>
+    <span class="brand-name">Exploit Host</span>
+  </div>
+  <nav class="bar-right">
+    <a href="https://discord.gg/rawmoddersgroup" class="pill" target="_blank" rel="noopener">RMG Discord</a>
+  </nav>
+</header>
+
+<main>
+
+<section id="menu">
+  <div class="section-head">
+    <h2>Select firmware</h2>
+    <p id="msgs" aria-live="polite" class="status">Pick your console firmware to load its host.</p>
+  </div>
+
+  <div class="grid">
+
+    <a class="tile tile-multi" href="g2all/index.html"
+       onmouseover="setMsg('GoldHEN multi-FW host: 5.05 and 7.00 – 13.52, auto exploit selection')"
+       onmouseout="resetMsg()">
+      <span class="tile-tag">Multi</span>
+      <span class="tile-name">GoldHEN Multi FW</span>
+      <span class="tile-sub">5.05 · 7.00 – 13.52</span>
+    </a>
+
+    <a class="tile" href="505/index.html"
+       onmouseover="setMsg('PS4 5.05 FW host v2.5')"
+       onmouseout="resetMsg()">
+      <span class="tile-tag">5.05</span>
+      <span class="tile-name">5.05 FW</span>
+      <span class="tile-sub">Host v2.5</span>
+    </a>
+
+    <a class="tile" href="672goldhen/index.html"
+       onmouseover="setMsg('PS4 6.72 FW GoldHEN host')"
+       onmouseout="resetMsg()">
+      <span class="tile-tag">6.72</span>
+      <span class="tile-name">6.72 GoldHEN</span>
+      <span class="tile-sub">GoldHEN host</span>
+    </a>
+
+    <a class="tile" href="672/index.html"
+       onmouseover="setMsg('PS4 6.72 FW host v3.0')"
+       onmouseout="resetMsg()">
+      <span class="tile-tag">6.72</span>
+      <span class="tile-name">6.72 FW</span>
+      <span class="tile-sub">Host v3.0</span>
+    </a>
+
+    <a class="tile" href="900goldhen/index.html"
+       onmouseover="setMsg('PS4 9.00 FW GoldHEN host — FontFaceSet webkit')"
+       onmouseout="resetMsg()">
+      <span class="tile-tag">9.00</span>
+      <span class="tile-name">9.00 GoldHEN</span>
+      <span class="tile-sub">FontFaceSet webkit</span>
+    </a>
+
+    <a class="tile" href="900v3/index.html"
+       onmouseover="setMsg('PS4 9.00 FW host v3.0 — FontFaceSet webkit')"
+       onmouseout="resetMsg()">
+      <span class="tile-tag">9.00</span>
+      <span class="tile-name">9.00 FW</span>
+      <span class="tile-sub">Host v3.0</span>
+    </a>
+
+    <a class="tile" href="dids1400/index.html"
+       onmouseover="setMsg('PS4 14.00 FW host')"
+       onmouseout="resetMsg()">
+      <span class="tile-tag">14.00</span>
+      <span class="tile-name">14.00 FW</span>
+      <span class="tile-sub">Host</span>
+    </a>
+
+    <a class="tile tile-new" href="dids1402/index.html"
+       onmouseover="setMsg('PS4 14.02 FW host — key-gated, encrypted at rest')"
+       onmouseout="resetMsg()">
+      <span class="tile-tag">14.02</span>
+      <span class="tile-name">14.02 FW</span>
+      <span class="tile-sub">Key-gated host</span>
+    </a>
+
+  </div>
+
+  <div class="sep"></div>
+
+  <div class="util-row">
+    <a class="util util-restore" href="restore/index.html"
+       onmouseover="setMsg('Restore the host to User’s Guide without using DNS')"
+       onmouseout="resetMsg()">Restore Host</a>
+
+    <button type="button" class="util util-donate"
+       onmouseover="setMsg('If you like my work you can support me with a crypto donation.')"
+       onmouseout="resetMsg()"
+       onclick="showDonate()">Donate · Crypto only</button>
+  </div>
+
+  <footer class="credit">
+    Developed by
+    <a href="https://discord.gg/rawmoddersgroup" class="credit-link" target="_blank" rel="noopener">Dids (z.z6_)</a>
+    · Thanks to every dev on the scene.
+  </footer>
+</section>
+
+<section id="crypto" hidden>
+  <div class="section-head">
+    <h2>Donate — BTC</h2>
+    <p class="status">Scan or copy the address below.</p>
+  </div>
+  <div class="donate-box">
+    <img src="btc.jpg" alt="BTC QR code" width="180" height="180">
+    <code class="addr" id="btcaddr">3ASQBax9BwD4jDp2HpgeZEHg53PMvEMDXd</code>
+    <div class="donate-actions">
+      <button type="button" class="util util-restore" onclick="copyAddr()">Copy address</button>
+      <button type="button" class="util" onclick="showMenu()">Back</button>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<script>
+  var defaultMsg = 'Pick your console firmware to load its host.';
+  function setMsg(t){ document.getElementById('msgs').textContent = t; }
+  function resetMsg(){ document.getElementById('msgs').textContent = defaultMsg; }
+  function showDonate(){
+    document.getElementById('menu').hidden = true;
+    document.getElementById('crypto').hidden = false;
+  }
+  function showMenu(){
+    document.getElementById('crypto').hidden = true;
+    document.getElementById('menu').hidden = false;
+  }
+  function copyAddr(){
+    var a = document.getElementById('btcaddr').textContent;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(a);
+    } else {
+      var t = document.createElement('textarea'); t.value = a;
+      document.body.appendChild(t); t.select();
+      try { document.execCommand('copy'); } catch(e){}
+      document.body.removeChild(t);
+    }
+  }
 </script>
 </body>
 </html>
