@@ -257,6 +257,16 @@ main {
   text-align: left;
 }
 
+.credit-name {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.credit-link-row {
+  margin-top: 6px;
+  word-break: break-all;
+}
+
 .credit-link {
   color: var(--purple-hi);
   text-decoration: none;
