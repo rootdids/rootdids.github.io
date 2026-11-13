@@ -1,28 +1,10 @@
 /*
-    afterglow -- PlayStation 4 kernel exploit for firmware 14.00
-    Port to the raw13 host (WebKit entry), from the Lua original.
+    PlayStation 4 kernel exploit, firmware 14.00.
 
-    Copyright (C) 2026 well0nez
+    probeAfterglow() answers whether this process can carry the exploit
+    at all; it fires nothing and patches nothing.
 
-    This program is free software: you can redistribute it and/or modify
-    it under the terms of the GNU Affero General Public License as
-    published by the Free Software Foundation, either version 3 of the
-    License, or (at your option) any later version.
-
-    This program is distributed in the hope that it will be useful,
-    but WITHOUT ANY WARRANTY; without even the implied warranty of
-    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-    GNU Affero General Public License for more details.
-
-    You should have received a copy of the GNU Affero General Public License
-    along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
-    UNTESTED IN THIS HOST. The Lua original has eight consecutive runs behind
-    it inside a game process. This file has none: it has never executed. Run
-    probeAfterglow() first -- it fires nothing and answers whether this process
-    can carry the exploit at all.
-
-    What the host must provide, and raw13 does:
+    What the host must provide:
       sc(num, ...args)      syscall, returns {lo, hi, i32}
       bufAddr(arrayBuffer)  int64 address of the backing store
       p.read1/4/8           read in this process
@@ -525,7 +507,7 @@ function qAt(buf, off) {
 
    The original issues this with the loader's native call. A host whose
    syscall primitive takes an arbitrary number could call syscall 11 straight;
-   raw13's sc() goes through a per-number stub table that has no entry for 11,
+   sc() goes through a per-number stub table that has no entry for 11,
    so the two byte userland stub stays and is entered with callAddr. */
 const GATE = 0x0a0, BODY = 0x0c0, OUT = 0x400, FLAG = 0x420, STAGE = 0x440;
 const STAGE_MAX = 0x400;
@@ -966,7 +948,7 @@ const GH_STEPS = [
    cost this project a day. One RW bit in the page directory entry that covers
    the padding fixes it. It does not survive a reboot.
 
-   The Lua version drives every read through GoldHEN's own trampoline because
+   The prior design drives every read through GoldHEN's own trampoline because
    that is its only way into ring 0. We already hold afterglow's gate, so this
    is plain reads and one write.
 
@@ -1540,7 +1522,7 @@ async function attempt(ctx, opts) {
   STATE.ctx = ctx;
   opts = opts || {};
   STATE.retry = false;
-  say("afterglow -- ps4 kernel exploit, firmware 14.00 (raw13 host)");
+  say("afterglow -- ps4 kernel exploit, firmware 14.00");
 
   const missing = seedStubs();
   if (missing.length) {

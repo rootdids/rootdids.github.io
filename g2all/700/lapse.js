@@ -1789,7 +1789,7 @@ export async function kexploit() {
   }
 }
 
-// ChendoChap's from pOOBs4
+
 function malloc(sz) {
   const backing = new Uint8Array(0x10000 + sz);
   nogc.push(backing);
@@ -1798,7 +1798,7 @@ function malloc(sz) {
   return ptr;
 }
 
-// ChendoChap's from pOOBs4
+
 function malloc32(sz) {
   const backing = new Uint8Array(0x10000 + sz * 4);
   nogc.push(backing);
@@ -1807,7 +1807,7 @@ function malloc32(sz) {
   return ptr;
 }
 
-// ChendoChap's from pOOBs4
+
 function array_from_address(addr, size) {
   const og_array = new Uint32Array(0x1000);
   const og_array_i = mem.addrof(og_array).add(0x10);
