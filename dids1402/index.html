@@ -7,10 +7,9 @@
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
-    <!-- The exploit code is encrypted at rest under enc/. The key below
-         decrypts and runs it in-browser; without the key the files on disk
-         are ciphertext and do nothing. The referrer guard in the bundle
-         still applies: arming the run requires navigation from this page. -->
+    <!-- Every run starts from here. The referrer guard in the bundle arms the
+         chain only when it was reached from this page, so that a browser
+         restoring its last session cannot re-run it unattended. -->
     <div id="brand"><b>Dids 14.02 Webhost</b></div>
 
     <div class="shell">
@@ -18,13 +17,6 @@
         <p class="lede">PS4 kernel exploit &middot; firmware 14.02</p>
 
         <form class="pick" id="pick">
-          <label class="opt key">
-            <span class="opt-label">access key</span>
-            <input id="pw" type="password" autocomplete="off"
-                   spellcheck="false" placeholder="32-character key"
-                   maxlength="64" />
-          </label>
-
           <label class="opt">
             <input type="radio" name="payload" value="hen" />
             <span>ps4-hen</span>

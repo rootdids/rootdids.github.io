@@ -1,11 +1,7 @@
-/* The landing page controller for dids1402.
+/* The landing page: pick a payload, then start the run.
  *
- * Collects the access key and payload choice, hands the key off to jb.html
- * through sessionStorage (never on the URL), and navigates.  The bundle's
- * referrer guard then arms the chain only because this page was the referrer.
- *
- * On wrong-key, jb.html itself reports and bounces back here.
- */
+ * Leaving this page has to be a real navigation from it -- the referrer guard
+ * in the bundle arms the chain only when the run page was reached from here. */
 
 var TARGET = {
   hen:     "log=1&afterglow=run&payload=hen.bin",
@@ -16,11 +12,14 @@ var AUTOSTART_SECONDS = 5;
 var STORE_KEY = "dids1402.choice";
 
 var form   = document.getElementById("pick");
-var pwIn   = document.getElementById("pw");
 var autoBx = document.getElementById("auto");
 var countE = document.getElementById("count");
 var ticker = null;
 
+/* The choice is remembered in localStorage, not by any HTTP cache: cache
+   headers decide whether a file is fetched again, never what the page
+   remembers. Both accessors are guarded, because storage can be unavailable
+   or throw outright, and the page has to work either way. */
 function remember() {
   try {
     localStorage.setItem(STORE_KEY, JSON.stringify({
@@ -52,7 +51,6 @@ function stopClock() {
 }
 
 function startClock() {
-  if (!pwIn.value) return;  /* no key yet -- don't auto-fire */
   var left = AUTOSTART_SECONDS;
   countE.textContent = "starting in " + left + "s";
   ticker = setInterval(function () {
@@ -64,20 +62,6 @@ function startClock() {
 
 function start() {
   stopClock();
-  var key = pwIn.value.trim();
-  if (!key) {
-    countE.textContent = "enter key";
-    return;
-  }
-  /* sessionStorage keeps the key on this origin only and never puts it on
-     the URL, where the PS4 browser's history/restore could resurface it.
-     jb.html pulls it once then clears it. */
-  try {
-    sessionStorage.setItem("dids1402.k", key);
-  } catch (e) {
-    countE.textContent = "sessionStorage blocked";
-    return;
-  }
   location.href = "jb.html?" + TARGET[picked()];
 }
 
@@ -93,26 +77,24 @@ form.addEventListener("change", function (ev) {
     else stopClock();
     return;
   }
+  /* Switching payload while the clock runs restarts it, so what is counting
+     down is always what is actually selected. */
   if (ev.target.name === "payload" && autoBx.checked) {
     stopClock();
     startClock();
   }
 });
 
-/* The first keystroke in the key field starts the clock (if autostart is
-   still on).  Subsequent edits just update: we don't restart the clock on
-   every character. */
-pwIn.addEventListener("input", function () {
-  if (autoBx.checked && ticker === null) startClock();
-});
-
-/* If the bundle completes and the browser restores the "done" address, we
-   land back here; keep the clock stopped so the user has to click start. */
+/* A run that reached the kernel swaps the address for this page and leaves
+   the marker behind. Coming up on that address means the browser restored a
+   finished run, so the clock stays stopped -- the choice is still restored
+   and start still works, it just does not go by itself. */
 var DONE = false;
 try { DONE = new URLSearchParams(location.search).get("afterglow") === "done"; } catch (e) {}
 
 restore();
 if (DONE) {
   countE.textContent = "kernel already patched - autostart held";
+} else if (autoBx.checked) {
+  startClock();
 }
-/* No autostart until the user types a key; this keeps the flow one-step. */
