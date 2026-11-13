@@ -236,6 +236,16 @@ main {
   border-color: var(--gold);
 }
 
+.util-discord {
+  border-color: #5865f2;   /* Discord blurple */
+  color: #e2e4ff;
+}
+
+.util-discord:hover {
+  background: #1e2275;
+  border-color: #7983f5;
+}
+
 /* footer credit */
 .credit {
   margin-top: 36px;
