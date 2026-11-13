@@ -1,12 +1,14 @@
 ﻿# PS4 Exploit Host
-Firmwares: `5.05` `6.72` `7.XX` `8.XX` `9.XX` `10.XX` `11.XX` `12.XX` `13.XX` `14.00` `14.02`
 
-## Steps:
+Hosted by **Dids (z.z6_)** — part of [RMG (Raw Modders Group)](https://discord.gg/rawmoddersgroup).
 
-- On the PS4 browser, go to: https://rootdids.github.io
-- Pick the firmware tile that matches your console.
-- Follow the on-page prompt (14.02 asks for an access key — see the host notes).
-- GoldHEN / ps4-hen loads automatically once the chain completes.
-- The jailbreak lasts until the console reboots. Nothing persists.
+Firmwares served: `5.05` · `6.72` · `7.XX` · `8.XX` · `9.XX` · `10.XX` · `11.XX` · `12.XX` · `13.XX` · `14.00` · `14.02`
 
-Community: https://discord.gg/rawmoddersgroup
+## Usage
+
+1. On the PS4 browser, open: `https://rootdids.github.io`
+2. Pick the matching firmware tile.
+3. Let the offline cache finish populating, then exit the browser and go offline.
+4. Re-open the browser to run the host.
+
+Community / support: https://discord.gg/rawmoddersgroup
